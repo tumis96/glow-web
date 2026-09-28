@@ -75,6 +75,11 @@
     });
     el.addEventListener('keydown', function (e) { if (e.key === 'Enter' && el.tagName !== 'P' && el.tagName !== 'LI' && el.tagName !== 'DD') e.preventDefault(); });
   });
+  // interní odkazy ponesou ?upravy=1 i pro případ, že prohlížeč neukládá localStorage
+  document.querySelectorAll('a[href]').forEach(function (a) {
+    var h = a.getAttribute('href');
+    if (/^[a-z0-9-]+\.html(#.*)?$/i.test(h)) a.setAttribute('href', h.replace(/\.html/, '.html?upravy=1'));
+  });
   // odkazy uvnitř editovaného textu neproklikávat
   document.addEventListener('click', function (e) {
     var a = e.target.closest('a');

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Svatby – svatební líčení a účesy | Glow by Petra Jahodová</title>
+  <meta name="description" content="Svatební líčení a účesy pro nevěstu, družičky i maminky. Zkouška předem, jedna svatba za den, dojezd kamkoliv po okolí Lichnova. Ceník, postup, časté otázky a poptávka svatebního termínu.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* jen pro tuto stránku: chyby ve formuláři, shrnutí poptávky, zálohový blok */
+    .field.is-invalid input, .field.is-invalid textarea { border-color: #b04a3f; }
+    .field .error { display: none; font-size: 13px; color: #b04a3f; }
+    .field.is-invalid .error { display: block; }
+    .check.is-invalid { color: #b04a3f; }
+    .notice--err { background: #fbeeec; color: #7a2f27; }
+    .summary { display: grid; gap: 6px 16px; grid-template-columns: max-content 1fr; margin: 0; font-size: 15px; }
+    .summary dt { color: var(--muted); }
+    .summary dd { margin: 0; font-weight: 500; }
+    .deposit { display: grid; gap: 24px; align-items: start; }
+    @media (min-width: 640px) { .deposit { grid-template-columns: 1fr 180px; } }
+    .deposit dl { display: grid; gap: 4px 16px; grid-template-columns: max-content 1fr; margin: 0; font-size: 15px; }
+    .deposit dt { color: var(--muted); }
+    .deposit dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .qr-placeholder { width: 180px; height: 180px; padding: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; color: var(--muted); border: 1px dashed var(--beige); }
+    .steps-note { font-size: 14px; color: var(--muted); }
+    #poptavka-ok[hidden], .form[hidden] { display: none; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Glow by Petra Jahodová – úvod">
+      <img src="img/logo.png" alt="">
+      <span class="brand-name">Glow <small>by Petra Jahodová</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Hlavní menu">
+      <ul>
+        <li><a href="sluzby.html">Služby a ceník</a></li>
+        <li><a href="rezervace.html">Rezervace</a></li>
+        <li><a href="svatby.html">Svatby</a></li>
+        <li><a href="portfolio.html">Portfolio</a></li>
+        <li><a href="o-mne.html">O mně</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-primary header-cta" href="rezervace.html">Chci se objednat</a>
+    <button class="nav-toggle" type="button" aria-label="Otevřít menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Svatby</p>
+      <h1>Tvůj den. Tvoje tvář. <em>Jen krásnější.</em></h1>
+      <p class="lead">Svatební líčení a&nbsp;účesy pro nevěstu, družičky, maminky i&nbsp;svědkyni. Všechno vyladíme předem na zkoušce, ve svatební den už jen zopakujeme, co ti sedělo.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="split">
+        <div class="photo photo--portrait">
+          <img src="img/nevesta-1-800.jpg" srcset="img/nevesta-1-800.jpg 800w, img/nevesta-1.jpg 1600w" sizes="(min-width: 860px) 520px, 100vw" alt="Nevěsta s věnečkem ve vlasech po svatebním líčení" width="800" height="1202" fetchpriority="high">
+        </div>
+        <div>
+          <p class="eyebrow">Můj přístup</p>
+          <h2>Zůstaneš sama sebou, <em>jen zářivější</em></h2>
+          <p class="lead mt-2">Svatební make&#8209;up dělám přirozeně a&nbsp;jemně. Žádné vrstvy ani masky, jen čistý a&nbsp;decentní vzhled, který vydrží celý den a&nbsp;na fotkách bude působit dokonale.</p>
+          <ul class="mt-3">
+            <li><strong>Zkouška předem.</strong> V&nbsp;salonu si spolu vyzkoušíme líčení i&nbsp;účes, ať ve svatební den nic neřešíme.</li>
+            <li><strong>Jedna svatba za den.</strong> Celý den patří jen tobě, nikam nespěchám.</li>
+            <li><strong>Přijedu za tebou.</strong> Kamkoliv po okolí za 10&nbsp;Kč/km, ať se ráno nemusíš nikam přesouvat.</li>
+            <li><strong>Pro celou svatební partu.</strong> Nalíčím a&nbsp;učešu i&nbsp;družičky, maminky, svědkyni nebo hosty.</li>
+          </ul>
+          <div class="hero-actions" style="justify-content:flex-start">
+            <a class="btn btn-primary" href="#poptavka">Poptat svatební termín</a>
+            <a class="link-arrow" href="#cenik">Svatební ceník</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--surface" id="postup">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <p class="eyebrow">Jak to probíhá</p>
+        <h2>Od poptávky ke svatebnímu ránu</h2>
+        <p>Čtyři kroky, nic složitého. Termín je tvůj, jakmile přijde záloha.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <h4>Poptávka termínu</h4>
+          <p>Vyplň <a class="link" href="#poptavka">formulář níže</a>: datum, místo, počet osob a&nbsp;čas, kdy má být líčení hotové. Ozvu se ti, jestli mám termín volný.</p>
+        </div>
+        <div class="step">
+          <h4>Rezervace zálohou</h4>
+          <p>Termín si držíš zálohou 1&nbsp;000&nbsp;Kč, kterou zaplatíš QR kódem do 3&nbsp;dnů. Jakmile mi přijde na účet, termín ti potvrdím. Bez zálohy se termín po 3&nbsp;dnech uvolní.</p>
+        </div>
+        <div class="step">
+          <h4>Zkouška líčení a&nbsp;účesu</h4>
+          <p>V&nbsp;salonu v&nbsp;Lichnově, ideálně 1–3 měsíce před svatbou. Záloha je zároveň cenou zkoušky a&nbsp;odečítá se z&nbsp;celkové ceny. Po zkoušce je nevratná.</p>
+        </div>
+        <div class="step">
+          <h4>Svatební den</h4>
+          <p>Přijedu za tebou a&nbsp;líčení bude hotové přesně v&nbsp;domluvený čas. Když budeš chtít, zůstanu s&nbsp;tebou celý den a&nbsp;průběžně tě upravím.</p>
+        </div>
+      </div>
+      <p class="steps-note center mt-4">Zkoušky dělám v&nbsp;salonu v&nbsp;úterý až čtvrtek odpoledne a&nbsp;v&nbsp;neděli dopoledne. Sobotní termíny patří jen svatbám.</p>
+    </div>
+  </section>
+
+  <section class="section" id="cenik">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <p class="eyebrow">Svatební ceník</p>
+        <h2>Ceny jsou konečné, <em>bez překvapení</em></h2>
+        <p>Nejsem plátce DPH, žádné příplatky za víkend ani brzké ráno. Záloha na termín je 1&nbsp;000&nbsp;Kč a&nbsp;odečítá se z&nbsp;výsledné ceny.</p>
+      </div>
+
+      <div class="narrow">
+        <h3>Nevěsta</h3>
+        <div class="price-list mt-2">
+          <div class="price-item">
+            <h4>Zkouška svatebního líčení</h4>
+            <span class="price">1&nbsp;000&nbsp;Kč</span>
+            <span class="dur">75&nbsp;min</span>
+            <p>Konzultace představy, termínu, místa a&nbsp;počtu osob, příprava pleti a&nbsp;výběr make&#8209;upu. Cena zkoušky je zároveň zálohou na svatební termín.</p>
+          </div>
+          <div class="price-item">
+            <h4>Svatební líčení – nevěsta</h4>
+            <span class="price">4&nbsp;000&nbsp;Kč</span>
+            <span class="dur">60&nbsp;min</span>
+            <p>Líčení ze zkoušky s&nbsp;případnými úpravami, ve svatební den u&nbsp;tebe.</p>
+          </div>
+          <div class="price-item">
+            <h4>Celodenní asistence – líčení</h4>
+            <span class="price">8&nbsp;000&nbsp;Kč</span>
+            <span class="dur">celý den</span>
+            <p>Svatební líčení a&nbsp;průběžné úpravy make&#8209;upu během celého dne, od příprav až po večerní zábavu.</p>
+          </div>
+          <div class="price-item">
+            <h4>Celodenní asistence – účes + líčení + průběžné úpravy</h4>
+            <span class="price">9&nbsp;000&nbsp;Kč</span>
+            <span class="dur">celý den</span>
+            <p>Líčení, účes a&nbsp;jejich úpravy po celý den. Doprava je v&nbsp;ceně.</p>
+          </div>
+          <div class="price-item">
+            <h4>Balíček nevěsta + svědkyně se vším</h4>
+            <span class="price">7&nbsp;000&nbsp;Kč</span>
+            <span class="dur">bez dopravy</span>
+            <p>Líčení i&nbsp;účes pro nevěstu a&nbsp;svědkyni. Doprava se počítá zvlášť, 10&nbsp;Kč/km.</p>
+          </div>
+          <div class="price-item">
+            <h4>Svatební účes – zkouška</h4>
+            <span class="price">900&nbsp;Kč</span>
+            <span class="dur">30–60&nbsp;min</span>
+            <p>Úprava vlasů, výběr ozdob, závoj ano či ne.</p>
+          </div>
+          <div class="price-item">
+            <h4>Svatební účes – ve svatební den</h4>
+            <span class="price">900&nbsp;Kč</span>
+            <span class="dur">30–60&nbsp;min</span>
+            <p>Účes podle zkoušky.</p>
+          </div>
+        </div>
+
+        <h3 class="mt-5">Družičky, maminky a&nbsp;hosté</h3>
+        <div class="price-list mt-2">
+          <div class="price-item">
+            <h4>Líčení – družička, maminka, host</h4>
+            <span class="price">1&nbsp;200&nbsp;Kč</span>
+            <span class="dur">45&nbsp;min</span>
+          </div>
+          <div class="price-item">
+            <h4>Účes – družička, maminka, host</h4>
+            <span class="price">700&nbsp;Kč</span>
+            <span class="dur">30&nbsp;min</span>
+          </div>
+        </div>
+
+        <h3 class="mt-5">Doplňky a&nbsp;doprava</h3>
+        <div class="price-list mt-2">
+          <div class="price-item">
+            <h4>Řasy</h4>
+            <span class="price">100&nbsp;Kč</span>
+            <p>Umělé řasy k&nbsp;líčení, pro každou osobu.</p>
+          </div>
+          <div class="price-item">
+            <h4>Ozdoby do vlasů</h4>
+            <span class="price">10&nbsp;Kč/ks</span>
+          </div>
+          <div class="price-item">
+            <h4>Doprava</h4>
+            <span class="price">10&nbsp;Kč/km</span>
+            <p>Z&nbsp;Lichnova kamkoliv po okolí. U&nbsp;celodenní asistence s&nbsp;účesem je doprava v&nbsp;ceně.</p>
+          </div>
+        </div>
+
+        <div class="notice mt-4">
+          <strong>Záloha na svatební termín</strong> je 1&nbsp;000&nbsp;Kč, tedy cena zkoušky líčení. Platí se do 3&nbsp;dnů od rezervace, po zkoušce je nevratná a&nbsp;odečítá se z&nbsp;výsledné ceny.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <p class="eyebrow">Svatební portfolio</p>
+        <h2>Nevěsty, které <em>zůstaly samy sebou</em></h2>
+      </div>
+      <div class="gallery">
+        <a class="lb" href="img/nevesta-2.jpg" data-caption="Nevěsta u okna, jemné svatební líčení"><img src="img/nevesta-2-800.jpg" alt="Nevěsta u okna, jemné svatební líčení" loading="lazy" width="800" height="1203"></a>
+        <a class="lb" href="img/nevesta-3.jpg" data-caption="Svatební líčení s důrazem na přirozenou pleť"><img src="img/nevesta-3-800.jpg" alt="Nevěsta po svatebním líčení, přirozená pleť" loading="lazy" width="800" height="1202"></a>
+        <a class="lb" href="img/nevesta-4.jpg" data-caption="Nevěsta v zrcadle s věnečkem"><img src="img/nevesta-4-800.jpg" alt="Nevěsta v zrcadle s věnečkem ve vlasech" loading="lazy" width="800" height="1202"></a>
+        <a class="lb" href="img/nevesta-5.jpg" data-caption="Svatební líčení a účes"><img src="img/nevesta-5-800.jpg" alt="Nevěsta se svatebním líčením a účesem" loading="lazy" width="800" height="1073"></a>
+      </div>
+      <p class="center mt-4"><a class="link-arrow" href="portfolio.html">Celé portfolio</a></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head">
+          <p class="eyebrow">Co je dobré vědět</p>
+          <h2>Časté otázky ke svatbám</h2>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>Kolik lidí zvládneš nalíčit a&nbsp;kdy musíme začít?</summary>
+            <div class="faq-body">
+              <p>Orientačně počítej: nevěsta 60&nbsp;min, každá další osoba 45&nbsp;min líčení nebo 30&nbsp;min účes. Nevěsta a&nbsp;dvě družičky s&nbsp;líčením i&nbsp;účesem tak zaberou zhruba 4&nbsp;hodiny. Do formuláře napiš, v&nbsp;kolik má být líčení hotové, a&nbsp;já ti spočítám, kdy ráno začneme. Časy jsou orientační, přesně je doladíme na zkoušce.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Kdy má být zkouška líčení?</summary>
+            <div class="faq-body">
+              <p>Ideálně 1–3 měsíce před svatbou, ať je dost času na případné změny a&nbsp;zároveň už víš, jaké budeš mít šaty a&nbsp;účes. Zkoušky dělám v&nbsp;salonu v&nbsp;Lichnově v&nbsp;úterý až čtvrtek odpoledne nebo v&nbsp;neděli dopoledne.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Co když se svatba zruší nebo přesune?</summary>
+            <div class="faq-body">
+              <p>Záloha 1&nbsp;000&nbsp;Kč je po zkoušce nevratná, protože ti držím celý den a&nbsp;odmítám ostatní poptávky. Když se svatba přesune, ozvi se co nejdřív a&nbsp;zkusíme najít nový termín. Pokud záloha nepřijde do 3&nbsp;dnů od rezervace, termín se uvolní pro další nevěsty.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Jak daleko jezdíš?</summary>
+            <div class="faq-body">
+              <p>Kamkoliv po okolí Lichnova a&nbsp;Frenštátu pod Radhoštěm. Doprava je 10&nbsp;Kč/km, u&nbsp;celodenní asistence s&nbsp;účesem a&nbsp;líčením je už v&nbsp;ceně. Jestli je to dál, napiš mi místo do poptávky a&nbsp;domluvíme se.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Co si připravit na zkoušku?</summary>
+            <div class="faq-body">
+              <p>Přijď s&nbsp;čistou pletí bez make&#8209;upu a&nbsp;vezmi si fotky inspirace, které se ti líbí (klidně i&nbsp;fotku šatů). Na zkoušku účesu přines ozdoby do vlasů nebo závoj, ať vidíme, jak to spolu ladí. Zbytek nech na mně.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Děláš i&nbsp;umělé řasy?</summary>
+            <div class="faq-body">
+              <p>Ano, k&nbsp;líčení je lepím za 100&nbsp;Kč. Doporučuju je vyzkoušet už na zkoušce, ať víš, jak se v&nbsp;nich cítíš. Hodí se i&nbsp;pro družičky nebo maminku.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Kolik svateb bereš za den?</summary>
+            <div class="faq-body">
+              <p>Jen jednu. Ve svatební den patří všechen můj čas tobě a&nbsp;tvojí partě, nikam nespěchám a&nbsp;můžu s&nbsp;tebou zůstat i&nbsp;na celodenní asistenci.</p>
+            </div>
+          </details>
+          <details>
+            <summary>Jak se platí zbytek ceny?</summary>
+            <div class="faq-body">
+              <p>Zálohu zaplatíš převodem po rezervaci. Zbytek ceny po odečtení zálohy doplatíš ve svatební den hotově nebo převodem. <span class="badge">Upřesníme</span></p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--surface" id="poptavka">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head">
+          <p class="eyebrow">Poptávka</p>
+          <h2>Poptat svatební termín</h2>
+          <p>Nezávazně. Ozvu se ti, jestli mám den volný, a&nbsp;pošlu ti podklady k&nbsp;záloze. Povinná pole jsou označená hvězdičkou.</p>
+        </div>
+
+        <p class="pilot-note">Pilotní verze: formulář se zatím nikam neodesílá, po odeslání se jen zobrazí ukázka potvrzení.</p>
+
+        <form class="form mt-3" id="form-svatba" novalidate>
+          <div class="notice notice--err" id="form-chyby" hidden></div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="jmeno">Jméno nevěsty *</label>
+              <input type="text" id="jmeno" name="jmeno" autocomplete="name" required>
+              <span class="error">Napiš prosím své jméno.</span>
+            </div>
+            <div class="field">
+              <label for="telefon">Telefon *</label>
+              <input type="tel" id="telefon" name="telefon" autocomplete="tel" placeholder="+420" required>
+              <span class="error">Zadej prosím telefonní číslo, ať se ti můžu ozvat.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="email">E&#8209;mail *</label>
+              <input type="email" id="email" name="email" autocomplete="email" required>
+              <span class="error">Zadej prosím platný e&#8209;mail.</span>
+            </div>
+            <div class="field">
+              <label for="datum">Datum svatby *</label>
+              <input type="date" id="datum" name="datum" required>
+              <span class="error">Vyber prosím datum svatby.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="misto">Místo svatby *</label>
+            <input type="text" id="misto" name="misto" placeholder="Obec, hotel, statek…" required>
+            <span class="hint">Kam za tebou ráno přijedu. Z&nbsp;Lichnova počítám dopravu 10&nbsp;Kč/km.</span>
+            <span class="error">Napiš prosím, kde se svatba koná.</span>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="cas-obradu">Čas obřadu</label>
+              <input type="time" id="cas-obradu" name="cas_obradu">
+            </div>
+            <div class="field">
+              <label for="cas-hotovo">Kdy má být líčení hotové</label>
+              <input type="time" id="cas-hotovo" name="cas_hotovo">
+              <span class="hint">Podle toho spočítám, kdy začneme.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="osob-liceni">Počet osob k&nbsp;líčení</label>
+              <input type="number" id="osob-liceni" name="osob_liceni" min="1" max="20" inputmode="numeric" placeholder="včetně nevěsty">
+            </div>
+            <div class="field">
+              <label for="osob-uces">Počet osob k&nbsp;účesu</label>
+              <input type="number" id="osob-uces" name="osob_uces" min="0" max="20" inputmode="numeric">
+            </div>
+          </div>
+
+          <fieldset class="field" style="border:0;padding:0;margin:0;min-width:0">
+            <legend style="font-size:14px;font-weight:600;padding:0">Zájem o&nbsp;zkoušku líčení *</legend>
+            <div class="choice-grid">
+              <label class="choice"><input type="radio" name="zkouska" value="ano"><b>Ano, chci zkoušku</b><small>1&nbsp;000&nbsp;Kč, zároveň záloha na termín</small></label>
+              <label class="choice"><input type="radio" name="zkouska" value="ne"><b>Ne, bez zkoušky</b><small>Záloha 1&nbsp;000&nbsp;Kč se odečte z&nbsp;ceny</small></label>
+            </div>
+            <span class="error">Vyber prosím, jestli chceš zkoušku líčení.</span>
+          </fieldset>
+
+          <div class="field">
+            <label for="poznamka">Poznámka nebo přání</label>
+            <textarea id="poznamka" name="poznamka" placeholder="Představa líčení, účesu, kdo všechno se bude líčit, cokoliv dalšího…"></textarea>
+          </div>
+
+          <label class="check" id="gdpr-check">
+            <input type="checkbox" name="gdpr" value="1" required>
+            <span>Souhlasím se zpracováním osobních údajů pro vyřízení poptávky. Více v&nbsp;<a href="ochrana-osobnich-udaju.html">ochraně osobních údajů</a>. *</span>
+          </label>
+
+          <div>
+            <button class="btn btn-primary" type="submit">Odeslat poptávku</button>
+            <p class="form-note mt-2">Odesláním nic neplatíš. Termín se rezervuje až zálohou.</p>
+          </div>
+        </form>
+
+        <div id="poptavka-ok" hidden>
+          <div class="notice notice--ok">
+            <h3>Děkuju, poptávku mám</h3>
+            <p class="mt-2">Tvoje poptávka má číslo <strong id="ok-cislo">2026001</strong>. Ozvu se ti, jestli je termín volný. Rekapitulaci ti pošlu i&nbsp;na e&#8209;mail.</p>
+            <dl class="summary mt-3" id="ok-shrnuti"></dl>
+          </div>
+
+          <div class="card mt-4">
+            <p class="eyebrow">Rezervace termínu zálohou</p>
+            <h3 class="mt-1">Termín je tvůj po zaplacení zálohy 1&nbsp;000&nbsp;Kč</h3>
+            <div class="deposit mt-3">
+              <div>
+                <dl>
+                  <dt>Částka</dt><dd>1&nbsp;000&nbsp;Kč</dd>
+                  <dt>Číslo účtu</dt><dd>274884608/0600</dd>
+                  <dt>Variabilní symbol</dt><dd id="ok-vs">2026001</dd>
+                  <dt>Splatnost</dt><dd id="ok-splatnost">do 3&nbsp;dnů</dd>
+                </dl>
+                <p class="muted mt-3" style="font-size:14px">Jakmile záloha přijde na účet, termín ti potvrdím. Když nepřijde do 3&nbsp;dnů, termín uvolním. Záloha je cenou zkoušky líčení a&nbsp;odečítá se z&nbsp;výsledné ceny; po zkoušce je nevratná.</p>
+              </div>
+              <div class="card card--surface qr-placeholder">QR kód pro platbu vygeneruje systém</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container">
+      <p class="eyebrow">Svatby</p>
+      <h2>Chceš mít svatební ráno bez starostí?</h2>
+      <p class="lead">Napiš mi datum a&nbsp;místo. Jedna svatba za den znamená, že ten tvůj bude jen tvůj.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#poptavka">Chci poptat termín</a>
+        <a class="btn btn-outline" href="kontakt.html">Kontakt</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand"><img src="img/logo.png" alt=""><b>Glow by Petra Jahodová</b></div>
+        <p class="muted">Přirozené líčení a&nbsp;účesy pro svatby, plesy i&nbsp;focení. Salon v&nbsp;Lichnově u&nbsp;Frenštátu pod Radhoštěm, výjezd po okolí.</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <ul>
+          <li><a href="tel:+420604643157">+420 604 643 157</a></li>
+          <li><a href="mailto:glow@glowbyjahodova.cz">glow@glowbyjahodova.cz</a></li>
+          <li>Lichnov 125, 742 75 Lichnov</li>
+          <li><a class="ig" href="https://www.instagram.com/petra.jahodova_mua/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>petra.jahodova_mua</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Rychle na</h4>
+        <ul>
+          <li><a href="sluzby.html">Služby a ceník</a></li>
+          <li><a href="rezervace.html">Rezervace</a></li>
+          <li><a href="svatby.html">Svatby</a></li>
+          <li><a href="portfolio.html">Portfolio</a></li>
+          <li><a href="o-mne.html">O mně</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <span>© <span data-year>2026</span> Petra Jahodová · IČO 24884995 · Lichnov 581, 742 75 Lichnov · Fyzická osoba zapsaná v&nbsp;živnostenském rejstříku · Neplátce DPH</span>
+      <span><a href="ochrana-osobnich-udaju.html">Ochrana osobních údajů</a> · <a href="obchodni-podminky.html">Obchodní podmínky</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+/* Pilot: svatební poptávka – jen validace a ukázka potvrzení, bez odeslání na server */
+(function () {
+  'use strict';
+  var form = document.getElementById('form-svatba');
+  var ok = document.getElementById('poptavka-ok');
+  var errBox = document.getElementById('form-chyby');
+  if (!form || !ok) return;
+
+  // Datum svatby nejdřív zítra
+  var today = new Date();
+  var tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  form.datum.min = isoDate(tomorrow);
+
+  function isoDate(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function csDate(iso) {
+    var p = iso.split('-');
+    return p.length === 3 ? parseInt(p[2], 10) + '. ' + parseInt(p[1], 10) + '. ' + p[0] : iso;
+  }
+  function fieldOf(el) {
+    return el.closest ? el.closest('.field, .check') : null;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var errors = [];
+    var firstBad = null;
+
+    form.querySelectorAll('.is-invalid').forEach(function (el) { el.classList.remove('is-invalid'); });
+
+    function bad(el, msg) {
+      var wrap = fieldOf(el);
+      if (wrap) wrap.classList.add('is-invalid');
+      errors.push(msg);
+      if (!firstBad) firstBad = el;
+    }
+
+    var v = function (name) { return (form[name].value || '').trim(); };
+
+    if (!v('jmeno')) bad(form.jmeno, 'jméno nevěsty');
+    if (!/^\+?[0-9 ]{9,16}$/.test(v('telefon'))) bad(form.telefon, 'telefon');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) bad(form.email, 'e‑mail');
+    if (!v('datum') || v('datum') < form.datum.min) bad(form.datum, 'datum svatby');
+    if (!v('misto')) bad(form.misto, 'místo svatby');
+    var zk = form.querySelector('input[name="zkouska"]:checked');
+    if (!zk) bad(form.querySelector('input[name="zkouska"]'), 'zájem o zkoušku');
+    if (!form.gdpr.checked) bad(form.gdpr, 'souhlas se zpracováním údajů');
+
+    if (errors.length) {
+      errBox.hidden = false;
+      errBox.textContent = 'Zkontroluj prosím: ' + errors.join(', ') + '.';
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (firstBad) firstBad.focus({ preventScroll: true });
+      return;
+    }
+    errBox.hidden = true;
+
+    // Shrnutí poptávky
+    var rows = [
+      ['Nevěsta', v('jmeno')],
+      ['Telefon', v('telefon')],
+      ['E‑mail', v('email')],
+      ['Datum svatby', csDate(v('datum'))],
+      ['Místo', v('misto')],
+      ['Čas obřadu', v('cas_obradu') || '—'],
+      ['Líčení hotové v', v('cas_hotovo') || '—'],
+      ['Osob k líčení', v('osob_liceni') || '—'],
+      ['Osob k účesu', v('osob_uces') || '—'],
+      ['Zkouška líčení', zk.value === 'ano' ? 'ano' : 'ne'],
+      ['Poznámka', v('poznamka') || '—']
+    ];
+    var dl = document.getElementById('ok-shrnuti');
+    dl.innerHTML = '';
+    rows.forEach(function (r) {
+      var dt = document.createElement('dt'); dt.textContent = r[0];
+      var dd = document.createElement('dd'); dd.textContent = r[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+
+    // Ukázkové číslo poptávky = variabilní symbol; splatnost 3 dny
+    var cislo = '2026001';
+    document.getElementById('ok-cislo').textContent = cislo;
+    document.getElementById('ok-vs').textContent = cislo;
+    var due = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3);
+    document.getElementById('ok-splatnost').textContent = 'do ' + csDate(isoDate(due)) + ' (3 dny)';
+
+    form.hidden = true;
+    ok.hidden = false;
+    ok.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+</script>
+</body>
+</html>

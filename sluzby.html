@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Služby a ceník | Glow by Petra Jahodová</title>
+  <meta name="description" content="Kompletní ceník líčení a účesů: denní, plesové a festivalové líčení, líčení na focení, svatební líčení a účesy, balíčky, kurz sebelíčení a dárkové poukazy. Ceny konečné, salon Lichnov nebo výjezd.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* jen doplňky pro tuto stránku */
+    [id] { scroll-margin-top: calc(var(--header-h) + 20px); }
+    .quick-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 28px; }
+    .price-item .link-arrow { grid-column: 1 / -1; font-size: 12px; margin-top: 4px; }
+    .price-item .badge { margin-left: 8px; vertical-align: middle; }
+    .voucher { min-height: 240px; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+    .voucher .voucher-title { font-family: var(--font-display); font-size: clamp(30px, 4vw, 40px); font-weight: 300; letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; }
+    .voucher .voucher-sub { margin-top: 6px; font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--accent-ink); }
+    .voucher .pilot-note { margin-top: 20px; border-radius: 10px; color: #6b4e1f; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Glow by Petra Jahodová – úvod">
+      <img src="img/logo.png" alt="">
+      <span class="brand-name">Glow <small>by Petra Jahodová</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Hlavní menu">
+      <ul>
+        <li><a href="sluzby.html">Služby a ceník</a></li>
+        <li><a href="rezervace.html">Rezervace</a></li>
+        <li><a href="svatby.html">Svatby</a></li>
+        <li><a href="portfolio.html">Portfolio</a></li>
+        <li><a href="o-mne.html">O mně</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-primary header-cta" href="rezervace.html">Chci se objednat</a>
+    <button class="nav-toggle" type="button" aria-label="Otevřít menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Služby a&nbsp;ceník</p>
+      <h1>Co pro tebe udělám <em>a&nbsp;za kolik</em></h1>
+      <p class="lead">Ceny jsou konečné, nejsem plátce DPH. Délka je orientační – záleží na tvé pleti, vlasech i&nbsp;na tom, co si přeješ.</p>
+      <nav class="quick-nav" aria-label="Rychlé menu ceníku">
+        <a class="btn btn-outline btn-sm" href="#liceni">Líčení</a>
+        <a class="btn btn-outline btn-sm" href="#ucesy">Účesy</a>
+        <a class="btn btn-outline btn-sm" href="#balicky">Balíčky</a>
+        <a class="btn btn-outline btn-sm" href="#svatebni">Svatební</a>
+        <a class="btn btn-outline btn-sm" href="#kurz">Kurz sebelíčení</a>
+        <a class="btn btn-outline btn-sm" href="#doplnky">Doplňky</a>
+        <a class="btn btn-outline btn-sm" href="#vyjezd">Výjezd</a>
+        <a class="btn btn-outline btn-sm" href="#storno">Storno</a>
+        <a class="btn btn-outline btn-sm" href="#poukazy">Poukazy</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Líčení -->
+  <section class="section section--tight section--surface" id="liceni">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head">
+          <p class="eyebrow">Líčení</p>
+          <h2>Líčení na každou <em>příležitost</em></h2>
+          <p>Každé líčení začíná přípravou pleti. Přijď odlíčená, zbytek nech na mně.</p>
+        </div>
+        <div class="price-list">
+          <div class="price-item" id="denni">
+            <h4>Denní líčení</h4>
+            <span class="price">500&nbsp;Kč</span>
+            <span class="dur">30&nbsp;min</span>
+            <p>Příprava pleti a&nbsp;jemné líčení vhodné na běžné nošení. Vypadáš svěže a&nbsp;přirozeně, jako ty sama v&nbsp;dobrý den.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=denni">Rezervovat</a>
+          </div>
+          <div class="price-item" id="plesove">
+            <h4>Plesové líčení</h4>
+            <span class="price">1&nbsp;000&nbsp;Kč</span>
+            <span class="dur">50&nbsp;min</span>
+            <p>Příprava pleti a&nbsp;krycí make&#8209;up s&nbsp;výraznějšími konturami a&nbsp;zvýrazněnýma očima nebo rty. Vydrží celý večer na parketu.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=plesove">Rezervovat</a>
+          </div>
+          <div class="price-item" id="festivalove">
+            <h4>Festivalové líčení</h4>
+            <span class="price">1&nbsp;000–1&nbsp;500&nbsp;Kč</span>
+            <span class="dur">60&nbsp;min</span>
+            <p>Výraznější barevný look z&nbsp;dlouhotrvajících produktů, které zvládnou slunce, prach i&nbsp;tanec do rána. Cena podle složitosti – domluvíme se předem.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=festivalove">Rezervovat</a>
+          </div>
+          <div class="price-item" id="foceni">
+            <h4>Líčení na focení</h4>
+            <span class="price">800&nbsp;Kč</span>
+            <span class="dur">45&nbsp;min</span>
+            <p>Spíše matný make&#8209;up, aby pleť na fotkách působila dokonale a&nbsp;čistě. Hodí se na rodinné, portrétní i&nbsp;firemní focení.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=foceni">Rezervovat</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Účesy -->
+  <section class="section section--tight" id="ucesy">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head">
+          <p class="eyebrow">Účesy</p>
+          <h2>Úprava vlasů <em>k&nbsp;líčení</em></h2>
+          <p>Délka je 30–60&nbsp;min podle délky a&nbsp;hustoty tvých vlasů.</p>
+        </div>
+        <div class="price-list">
+          <div class="price-item" id="uces-jednoduchy">
+            <h4>Jednoduchá úprava</h4>
+            <span class="price">500&nbsp;Kč</span>
+            <span class="dur">30–60&nbsp;min</span>
+            <p>Vlnění, žehlení nebo jemné sepnutí vlasů.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=uces-jednoduchy">Rezervovat</a>
+          </div>
+          <div class="price-item" id="uces-slozity">
+            <h4>Složitější účes</h4>
+            <span class="price">800&nbsp;Kč</span>
+            <span class="dur">30–60&nbsp;min</span>
+            <p>Účes s&nbsp;ozdobami, více materiálu a&nbsp;tepelnou úpravou. Ozdoby do vlasů si můžeš připlatit, viz <a href="#doplnky">doplňky</a>.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=uces-slozity">Rezervovat</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Balíčky -->
+  <section class="section section--tight section--surface" id="balicky">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head">
+          <p class="eyebrow">Balíčky</p>
+          <h2>Líčení a&nbsp;účes <em>v&nbsp;jednom</em></h2>
+          <p>Když chceš být hotová na jednom místě a&nbsp;za jednu cenu.</p>
+        </div>
+        <div class="price-list">
+          <div class="price-item" id="balicek-ples">
+            <h4>Plesový balíček</h4>
+            <span class="price">1&nbsp;500&nbsp;Kč</span>
+            <span class="dur">90&nbsp;min</span>
+            <p>Plesové líčení a&nbsp;účes. Ideální na maturitní ples nebo firemní večírek.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=balicek-ples">Rezervovat</a>
+          </div>
+          <div class="price-item" id="balicek-foto">
+            <h4>Foto balíček</h4>
+            <span class="price">1&nbsp;200&nbsp;Kč</span>
+            <span class="dur">75&nbsp;min</span>
+            <p>Líčení na focení a&nbsp;účes, ať jsi na fotkách celá sladěná.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=balicek-foto">Rezervovat</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Svatební -->
+  <section class="section section--tight" id="svatebni">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head">
+          <p class="eyebrow">Svatební líčení a&nbsp;účesy</p>
+          <h2>Pro nevěstu <em>i&nbsp;její družinu</em></h2>
+          <p>Svatební termín si rezervuješ zálohou 1&nbsp;000&nbsp;Kč přes <a class="link" href="svatby.html#poptavka">svatební poptávku</a>; záloha je zároveň cenou zkoušky líčení. Ve svatební den beru jen jednu svatbu, takže mám čas jen pro tebe.</p>
+        </div>
+        <div class="price-list">
+          <div class="price-item" id="zkouska-liceni">
+            <h4>Zkouška svatebního líčení <span class="badge">záloha</span></h4>
+            <span class="price">1&nbsp;000&nbsp;Kč</span>
+            <span class="dur">75&nbsp;min</span>
+            <p>Konzultace (tvoje představa, termín, místo, kolik osob), příprava pleti a&nbsp;výběr make&#8209;upu. Cena zkoušky je zároveň zálohou na svatební termín.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=zkouska-liceni">Rezervovat</a>
+          </div>
+          <div class="price-item">
+            <h4>Svatební líčení – nevěsta</h4>
+            <span class="price">4&nbsp;000&nbsp;Kč</span>
+            <span class="dur">60&nbsp;min</span>
+            <p>Líčení ze zkoušky s&nbsp;případnými změnami, které jsme si po zkoušce řekly.</p>
+          </div>
+          <div class="price-item">
+            <h4>Celodenní asistence – líčení</h4>
+            <span class="price">8&nbsp;000&nbsp;Kč</span>
+            <span class="dur">celý den</span>
+            <p>Nalíčím tě a&nbsp;zůstanu s&nbsp;tebou po celý den. Po obřadu, focení i&nbsp;prvním tanci máš líčení vždy jako nové.</p>
+          </div>
+          <div class="price-item">
+            <h4>Celodenní asistence – účes, líčení a&nbsp;průběžné úpravy</h4>
+            <span class="price">9&nbsp;000&nbsp;Kč</span>
+            <span class="dur">celý den</span>
+            <p>Účes i&nbsp;líčení ráno a&nbsp;průběžné úpravy během celého dne. Doprava je v&nbsp;ceně.</p>
+          </div>
+          <div class="price-item">
+            <h4>Balíček nevěsta + svědkyně</h4>
+            <span class="price">7&nbsp;000&nbsp;Kč</span>
+            <p>Líčení a&nbsp;účes pro nevěstu i&nbsp;svědkyni v&nbsp;jednom balíčku. Cena je bez dopravy, tu počítám 10&nbsp;Kč/km. <span class="muted">(Přesný rozsah balíčku doplníme.)</span></p>
+          </div>
+          <div class="price-item" id="zkouska-uces">
+            <h4>Svatební účes – zkouška</h4>
+            <span class="price">900&nbsp;Kč</span>
+            <span class="dur">30–60&nbsp;min</span>
+            <p>Úprava vlasů, výběr ozdob a&nbsp;rozhodnutí, zda závoj ano, nebo ne.</p>
+            <a class="link-arrow" href="rezervace.html?sluzba=zkouska-uces">Rezervovat</a>
+          </div>
+          <div class="price-item">
+            <h4>Svatební účes – ve svatební den</h4>
+            <span class="price">900&nbsp;Kč</span>
+            <span class="dur">30–60&nbsp;min</span>
+            <p>Účes podle zkoušky.</p>
+          </div>
+          <div class="price-item">
+            <h4>Družička, maminka nebo host – líčení</h4>
+            <span class="price">1&nbsp;200&nbsp;Kč</span>
+            <span class="dur">45&nbsp;min</span>
+            <p>Líčení pro každou z&nbsp;tvé družiny. Počet osob domluvíme při zkoušce.</p>
+          </div>
+          <div class="price-item">
+            <h4>Družička, maminka nebo host – účes</h4>
+            <span class="price">700&nbsp;Kč</span>
+            <span class="dur">30&nbsp;min</span>
+            <p>Účes pro družičku, maminku nebo hosta.</p>
+          </div>
+        </div>
+        <div class="notice mt-3">
+          <strong>Záloha na svatební termín</strong> je ve výši ceny zkoušky (1&nbsp;000&nbsp;Kč). Po zkoušce je nevratná a&nbsp;odečítá se z&nbsp;konečné ceny svatebního líčení.
+        </div>
+        <div class="hero-actions" style="justify-content:flex-start">
+          <a class="btn btn-primary" href="svatby.html#poptavka">Poptat svatební termín</a>
+          <a class="link-arrow" href="svatby.html">Jak probíhá svatba se mnou</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kurz sebelíčení -->
+  <section class="section section--surface" id="kurz">
+    <div class="container">
+      <div class="split">
+        <div class="photo photo--landscape">
+          <img src="img/prace-4-800.jpg" srcset="img/prace-4-800.jpg 800w, img/prace-4.jpg 1600w" sizes="(min-width: 860px) 520px, 100vw" alt="Petra při líčení klientky v salonu" loading="lazy" width="800" height="533">
+        </div>
+        <div>
+          <p class="eyebrow">Kurz sebelíčení</p>
+          <h2>Nauč se nalíčit <em>sama sebe</em></h2>
+          <p class="lead mt-2">Půlku obličeje nalíčím já a&nbsp;půlku ty – krok za krokem podle mě. Projdeme péči o&nbsp;pleť, výběr make&#8209;upu pro tvůj typ pleti a&nbsp;tipy, které využiješ každé ráno.</p>
+          <div class="price-list mt-3">
+            <div class="price-item">
+              <h4>Kurz sebelíčení</h4>
+              <span class="price">3&nbsp;000&nbsp;Kč</span>
+              <span class="dur">120&nbsp;min</span>
+              <p>Individuálně, jen ty a&nbsp;já. Přines si svůj make&#8209;up, ať víš, co z&nbsp;něj používat a&nbsp;co ti chybí.</p>
+              <a class="link-arrow" href="rezervace.html?sluzba=kurz">Rezervovat</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Doplňky -->
+  <section class="section section--tight" id="doplnky">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head">
+          <p class="eyebrow">Doplňky</p>
+          <h2>Maličkosti, které <em>dotáhnou výsledek</em></h2>
+          <p>Připočítávají se k&nbsp;ceně líčení nebo účesu.</p>
+        </div>
+        <div class="price-list">
+          <div class="price-item">
+            <h4>Umělé řasy</h4>
+            <span class="price">100&nbsp;Kč</span>
+            <p>Lepené řasy ke každému líčení, když chceš pohled o&nbsp;kousek výraznější.</p>
+          </div>
+          <div class="price-item">
+            <h4>Ozdoby do vlasů</h4>
+            <span class="price">10&nbsp;Kč/ks</span>
+            <p>Sponky, květy a&nbsp;další ozdoby do účesu. Vlastní si samozřejmě můžeš přinést.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Výjezd + storno -->
+  <section class="section section--tight section--surface">
+    <div class="container">
+      <div class="grid grid-2">
+        <div class="card" id="vyjezd">
+          <p class="eyebrow">Kde se líčí</p>
+          <h3 class="mt-1">V&nbsp;salonu, nebo u&nbsp;tebe</h3>
+          <p>Salon mám v&nbsp;Lichnově u&nbsp;Frenštátu pod Radhoštěm (Lichnov 125). Vchod je od hlavní cesty, zaparkuješ u&nbsp;kostela nebo u&nbsp;obecního úřadu.</p>
+          <p>Když chceš, přijedu já za tebou. <strong>Výjezd stojí 10&nbsp;Kč/km</strong> – počítám cestu ze salonu k&nbsp;tobě a&nbsp;zpět. Za víkend ani brzké ráno si žádný příplatek neúčtuji.</p>
+          <p class="mt-2"><a class="link-arrow" href="kontakt.html">Kde salon najdeš</a></p>
+        </div>
+        <div class="card" id="storno">
+          <p class="eyebrow">Storno</p>
+          <h3 class="mt-1">Když se ti to nehodí</h3>
+          <p>Termín můžeš <strong>zdarma zrušit nejpozději den předem</strong>. Za zrušení v&nbsp;den líčení účtuji storno poplatek 300&nbsp;Kč, protože ten čas už jsem měla jen pro tebe.</p>
+          <p>U&nbsp;svateb platí záloha ve výši zkoušky, která je po zkoušce nevratná (viz <a href="#svatebni">svatební ceník</a>).</p>
+          <p class="mt-2"><a class="link-arrow" href="obchodni-podminky.html">Celé obchodní podmínky</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dárkové poukazy -->
+  <section class="section" id="poukazy">
+    <div class="container">
+      <div class="split">
+        <div class="card card--surface voucher">
+          <span class="eyebrow">Glow by Petra Jahodová</span>
+          <span class="voucher-title mt-2">Poukaz</span>
+          <span class="voucher-sub">na líčení</span>
+          <p class="pilot-note">Sem přijde fotka tištěného poukazu – doplníme.</p>
+        </div>
+        <div>
+          <p class="eyebrow">Dárkové poukazy</p>
+          <h2>Daruj <em>chvíli pro ni</em></h2>
+          <p class="lead mt-2">Dárkový poukaz můžeš věnovat na libovolnou službu z&nbsp;ceníku – na denní líčení, plesový balíček i&nbsp;kurz sebelíčení. Obdarovaná si pak sama vybere termín, který jí sedí.</p>
+          <ul class="mt-3">
+            <li>Platnost 6&nbsp;měsíců od zakoupení</li>
+            <li>Tištěný poukaz, který můžeš rovnou zabalit</li>
+            <li>Uplatní se přes běžnou rezervaci termínu</li>
+          </ul>
+          <div class="hero-actions" style="justify-content:flex-start">
+            <a class="btn btn-primary" href="kontakt.html">Chci poukaz</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container">
+      <p class="eyebrow">Rezervace</p>
+      <h2>Vybráno? Tak si rovnou vyber i&nbsp;termín</h2>
+      <p class="lead">Rezervaci potvrdím osobně do jednoho dne. Termíny nabízím až 2&nbsp;měsíce dopředu, nejpozději 2&nbsp;dny předem.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="rezervace.html">Chci se objednat</a>
+        <a class="btn btn-outline" href="kontakt.html">Raději napsat</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand"><img src="img/logo.png" alt=""><b>Glow by Petra Jahodová</b></div>
+        <p class="muted">Přirozené líčení a&nbsp;účesy pro svatby, plesy i&nbsp;focení. Salon v&nbsp;Lichnově u&nbsp;Frenštátu pod Radhoštěm, výjezd po okolí.</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <ul>
+          <li><a href="tel:+420604643157">+420 604 643 157</a></li>
+          <li><a href="mailto:glow@glowbyjahodova.cz">glow@glowbyjahodova.cz</a></li>
+          <li>Lichnov 125, 742 75 Lichnov</li>
+          <li><a class="ig" href="https://www.instagram.com/petra.jahodova_mua/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>petra.jahodova_mua</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Rychle na</h4>
+        <ul>
+          <li><a href="sluzby.html">Služby a ceník</a></li>
+          <li><a href="rezervace.html">Rezervace</a></li>
+          <li><a href="svatby.html">Svatby</a></li>
+          <li><a href="portfolio.html">Portfolio</a></li>
+          <li><a href="o-mne.html">O mně</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <span>© <span data-year>2026</span> Petra Jahodová · IČO 24884995 · Lichnov 581, 742 75 Lichnov · Fyzická osoba zapsaná v&nbsp;živnostenském rejstříku · Neplátce DPH</span>
+      <span><a href="ochrana-osobnich-udaju.html">Ochrana osobních údajů</a> · <a href="obchodni-podminky.html">Obchodní podmínky</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

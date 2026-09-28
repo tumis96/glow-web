@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kontakt | Glow by Petra Jahodová</title>
+  <meta name="description" content="Kontakt na vizážistku Petru Jahodovou: telefon, e‑mail, Instagram a mapa k salonu Glow v Lichnově u Frenštátu pod Radhoštěm. Otevřeno pouze na objednávku.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* jen doplňky pro stránku Kontakt */
+    .contact-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 14px; }
+    .contact-list li { display: grid; gap: 2px; }
+    .contact-list .label { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .contact-list a { text-decoration: none; color: var(--ink); font-weight: 500; }
+    .contact-list a:hover { color: var(--accent-ink); }
+    .contact-list .ig { font-weight: 500; }
+    .contact-list .ig svg { color: var(--accent-ink); }
+    .contact-list p { margin-top: 0; }
+    .map { width: 100%; height: 380px; border: 0; border-radius: 22px; background: var(--surface); display: block; }
+    .map-note { margin-top: 14px; }
+    .field-error { display: none; font-size: 13px; color: #9a3b32; }
+    .field.is-invalid .field-error { display: block; }
+    .field.is-invalid input, .field.is-invalid textarea { border-color: #c0665c; }
+    .check.is-invalid { color: #9a3b32; }
+    .form .btn { justify-self: start; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Glow by Petra Jahodová – úvod">
+      <img src="img/logo.png" alt="">
+      <span class="brand-name">Glow <small>by Petra Jahodová</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Hlavní menu">
+      <ul>
+        <li><a href="sluzby.html">Služby a ceník</a></li>
+        <li><a href="rezervace.html">Rezervace</a></li>
+        <li><a href="svatby.html">Svatby</a></li>
+        <li><a href="portfolio.html">Portfolio</a></li>
+        <li><a href="o-mne.html">O mně</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-primary header-cta" href="rezervace.html">Chci se objednat</a>
+    <button class="nav-toggle" type="button" aria-label="Otevřít menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Kontakt</p>
+      <h1>Ozvi se, nebo <em>přijď</em></h1>
+      <p class="lead">Salon mám otevřený pouze na objednávku. Nejdřív se domluvíme na termínu, ať na tebe mám v&nbsp;klidu čas.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="sr-only">Kontaktní údaje a&nbsp;mapa</h2>
+      <div class="split" style="align-items:start">
+        <div>
+          <div class="card">
+            <h3>Salon Glow v&nbsp;Lichnově</h3>
+            <p>Nejrychleji mě zastihneš na telefonu nebo na Instagramu. Když právě líčím, ozvu se hned, jak to půjde.</p>
+            <ul class="contact-list">
+              <li>
+                <span class="label">Telefon</span>
+                <a href="tel:+420604643157">+420&nbsp;604&nbsp;643&nbsp;157</a>
+              </li>
+              <li>
+                <span class="label">E‑mail</span>
+                <!-- E‑mailová adresa se upřesní podle finální domény (glowbyjahodova.cz je volná, viz brief bod 2). -->
+                <a href="mailto:glow@glowbyjahodova.cz">glow@glowbyjahodova.cz</a>
+              </li>
+              <li>
+                <span class="label">Instagram</span>
+                <a class="ig" href="https://www.instagram.com/petra.jahodova_mua/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>petra.jahodova_mua</a>
+              </li>
+              <li>
+                <span class="label">Adresa salonu</span>
+                <address style="font-style:normal">Lichnov 125, 742&nbsp;75 Lichnov<br><span class="muted">u&nbsp;Frenštátu pod Radhoštěm</span></address>
+              </li>
+              <li>
+                <span class="label">Otevírací doba</span>
+                <p>Otevřeno pouze na objednávku</p>
+              </li>
+              <li>
+                <span class="label">Jak mě najdeš</span>
+                <p>Vchod je od hlavní cesty. Zaparkovat můžeš u&nbsp;kostela nebo u&nbsp;obecního úřadu.</p>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card card--surface mt-3">
+            <h4>Fakturační údaje</h4>
+            <p>Petra Jahodová<br>IČO 24884995<br>Sídlo: Lichnov 581, 742&nbsp;75 Lichnov<br>Fyzická osoba zapsaná v&nbsp;živnostenském rejstříku<br>Neplátce DPH – ceny jsou konečné</p>
+          </div>
+        </div>
+
+        <div>
+          <iframe class="map" src="https://www.google.com/maps?q=Lichnov%20125,%20742%2075%20Lichnov&output=embed" title="Mapa – salon Glow by Petra Jahodová, Lichnov 125" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+          <p class="map-note"><a class="link-arrow" href="https://www.google.com/maps/search/?api=1&query=Lichnov%20125%2C%20742%2075%20Lichnov" target="_blank" rel="noopener">Otevřít v&nbsp;Mapách</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--surface" id="napiste">
+    <div class="container">
+      <div class="narrow">
+        <div class="section-head section-head--center">
+          <p class="eyebrow">Zpráva</p>
+          <h2>Napiš mi</h2>
+          <p>Máš dotaz k&nbsp;líčení, účesu nebo kurzu sebelíčení? Napiš, ozvu se ti zpátky. Termín si ale nejrychleji zajistíš přes <a class="link" href="rezervace.html">online rezervaci</a>.</p>
+        </div>
+
+        <p class="pilot-note mt-2">Pilotní verze: formulář se zatím neodesílá. Po spuštění webu bude zpráva chodit Petře na e‑mail.</p>
+
+        <form class="form mt-3" id="kontakt-form" action="#" method="post" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="jmeno">Jméno a&nbsp;příjmení <span aria-hidden="true">*</span></label>
+              <input type="text" id="jmeno" name="jmeno" autocomplete="name" required>
+              <span class="field-error" id="jmeno-error">Napiš prosím své jméno.</span>
+            </div>
+            <div class="field">
+              <label for="email">E‑mail <span aria-hidden="true">*</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" inputmode="email" required>
+              <span class="field-error" id="email-error">Zadej prosím platný e‑mail, ať ti můžu odpovědět.</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="telefon">Telefon <span class="muted" style="font-weight:400">(nepovinné)</span></label>
+            <input type="tel" id="telefon" name="telefon" autocomplete="tel" inputmode="tel">
+            <span class="hint">Když budeš chtít, zavolám ti zpátky.</span>
+          </div>
+          <div class="field">
+            <label for="zprava">Zpráva <span aria-hidden="true">*</span></label>
+            <textarea id="zprava" name="zprava" required placeholder="O&nbsp;jakou službu máš zájem, kdy a&nbsp;pro kolik osob?"></textarea>
+            <span class="field-error" id="zprava-error">Napiš mi prosím pár slov, s&nbsp;čím ti můžu pomoct.</span>
+          </div>
+          <div class="field">
+            <label class="check" for="gdpr">
+              <input type="checkbox" id="gdpr" name="gdpr" required>
+              <span>Souhlasím se zpracováním osobních údajů za účelem vyřízení mé zprávy. Podrobnosti najdeš v&nbsp;<a class="link" href="ochrana-osobnich-udaju.html">ochraně osobních údajů</a>. <span aria-hidden="true">*</span></span>
+            </label>
+            <span class="field-error" id="gdpr-error">Bez souhlasu ti bohužel nemůžu odpovědět.</span>
+          </div>
+          <p class="form-note">Položky označené * jsou povinné.</p>
+          <div class="notice notice--ok" id="kontakt-ok" hidden role="status">Zpráva je připravená k&nbsp;odeslání – v&nbsp;pilotní verzi se ještě neodesílá.</div>
+          <button class="btn btn-primary" type="submit">Odeslat zprávu</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container">
+      <p class="eyebrow">Rezervace</p>
+      <h2>Nejrychlejší je online rezervace</h2>
+      <p class="lead">Vyber si službu a&nbsp;termín, já ho potvrdím osobně do jednoho dne. Zdarma zrušíš den předem.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="rezervace.html">Chci se objednat</a>
+        <a class="btn btn-outline" href="sluzby.html">Služby a&nbsp;ceník</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand"><img src="img/logo.png" alt=""><b>Glow by Petra Jahodová</b></div>
+        <p class="muted">Přirozené líčení a&nbsp;účesy pro svatby, plesy i&nbsp;focení. Salon v&nbsp;Lichnově u&nbsp;Frenštátu pod Radhoštěm, výjezd po okolí.</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <ul>
+          <li><a href="tel:+420604643157">+420 604 643 157</a></li>
+          <li><a href="mailto:glow@glowbyjahodova.cz">glow@glowbyjahodova.cz</a></li>
+          <li>Lichnov 125, 742 75 Lichnov</li>
+          <li><a class="ig" href="https://www.instagram.com/petra.jahodova_mua/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>petra.jahodova_mua</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Rychle na</h4>
+        <ul>
+          <li><a href="sluzby.html">Služby a ceník</a></li>
+          <li><a href="rezervace.html">Rezervace</a></li>
+          <li><a href="svatby.html">Svatby</a></li>
+          <li><a href="portfolio.html">Portfolio</a></li>
+          <li><a href="o-mne.html">O mně</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <span>© <span data-year>2026</span> Petra Jahodová · IČO 24884995 · Lichnov 581, 742 75 Lichnov · Fyzická osoba zapsaná v&nbsp;živnostenském rejstříku · Neplátce DPH</span>
+      <span><a href="ochrana-osobnich-udaju.html">Ochrana osobních údajů</a> · <a href="obchodni-podminky.html">Obchodní podmínky</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+  /* Pilotní kontaktní formulář – jen validace, nic se neodesílá. */
+  (function () {
+    'use strict';
+    var form = document.getElementById('kontakt-form');
+    if (!form) return;
+    var ok = document.getElementById('kontakt-ok');
+
+    function setInvalid(el, invalid) {
+      var wrap = el.closest('.field');
+      if (wrap) wrap.classList.toggle('is-invalid', invalid);
+      var check = el.closest('.check');
+      if (check) check.classList.toggle('is-invalid', invalid);
+      el.setAttribute('aria-invalid', invalid ? 'true' : 'false');
+      var err = document.getElementById(el.id + '-error');
+      if (err) { if (invalid) el.setAttribute('aria-describedby', err.id); else el.removeAttribute('aria-describedby'); }
+    }
+
+    function validate() {
+      var first = null;
+      var fields = [
+        { el: form.jmeno, valid: function (v) { return v.trim().length >= 2; } },
+        { el: form.email, valid: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); } },
+        { el: form.zprava, valid: function (v) { return v.trim().length >= 5; } },
+        { el: form.gdpr, valid: function () { return form.gdpr.checked; } }
+      ];
+      fields.forEach(function (f) {
+        var bad = !f.valid(f.el.value || '');
+        setInvalid(f.el, bad);
+        if (bad && !first) first = f.el;
+      });
+      return first;
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      ok.hidden = true;
+      var first = validate();
+      if (first) { first.focus(); return; }
+      ok.hidden = false;
+      ok.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+
+    // Chybu schovej, jakmile klientka pole opraví
+    form.addEventListener('input', function (e) {
+      var el = e.target;
+      if (el.getAttribute('aria-invalid') === 'true') setInvalid(el, false);
+    });
+  })();
+</script>
+</body>
+</html>

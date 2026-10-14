@@ -51,7 +51,7 @@
     },
 
     // Pravidla dostupnosti: kdy (dny, případně jen některé měsíce) a které služby.
-    // Pondělí a sobota tu nejsou = nic (sobota je jen pro svatby, bez online rezervace).
+    // Pondělí tu není = nic. Sobota je primárně pro svatby, v plesové sezóně (XI–III) i pro plesy (Petra, 14. 10. 2026).
     pravidla: [
       {
         dny: [2, 3, 4], od: '15:30', do: '19:00',
@@ -59,8 +59,8 @@
         sluzby: ['denni', 'foceni', 'balicek-foto', 'uces-jednoduchy', 'uces-slozity', 'zkouska-liceni', 'zkouska-uces', 'kurz']
       },
       {
-        dny: [5], od: '15:00', do: '20:00', mesice: [11, 12, 1, 2, 3],
-        popis: 'v pátek 15:00–20:00, jen od listopadu do března',
+        dny: [5, 6], od: '15:00', do: '20:00', mesice: [11, 12, 1, 2, 3],
+        popis: 'v pátek a v sobotu 15:00–20:00, jen od listopadu do března',
         sluzby: ['plesove', 'festivalove', 'balicek-ples', 'uces-jednoduchy', 'uces-slozity']
       },
       {

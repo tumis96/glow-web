@@ -34,6 +34,12 @@
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
 
+/* Odhalení při scrollu (přidává main.js): prvek je zprvu neviditelný a při dorolování se zjasní a vyjede nahoru.
+   Bez JS (nebo při omezeném pohybu) zůstává vše viditelné. */
+.js .reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s cubic-bezier(.22,.61,.36,1), transform .8s cubic-bezier(.22,.61,.36,1); transition-delay: var(--reveal-delay, 0s); will-change: opacity, transform; }
+.js .reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js .reveal { opacity: 1; transform: none; } }
+
 body {
   margin: 0;
   background: var(--bg);

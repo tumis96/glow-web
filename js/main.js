@@ -2,6 +2,49 @@
 (function () {
   'use strict';
 
+  // Odhalení při scrollu: vybrané prvky dostanou .reveal a při vjezdu do okna .is-visible.
+  // Sourozenci v jedné skupině (karty, fotky, položky ceníku) se objevují postupně.
+  document.documentElement.classList.add('js');
+  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var skupiny = ['.grid', '.gallery', '.price-list', '.steps', '.choice-grid', '.footer-grid'];
+    var jednotlive = ['.section-head', '.split > *', '.page-hero > .container > *', '.hero > .container > *', '.cta-band > .container', '.faq details', '.narrow > .notice', '.narrow > p', 'main > .section > .container > h2', 'main > .section > .container > h3'];
+    var items = [];
+    skupiny.forEach(function (sel) {
+      document.querySelectorAll('main ' + sel).forEach(function (group) {
+        Array.prototype.forEach.call(group.children, function (child, i) {
+          if (child.classList.contains('reveal')) return;
+          child.classList.add('reveal');
+          child.style.setProperty('--reveal-delay', Math.min(i, 7) * 0.09 + 's');
+          items.push(child);
+        });
+      });
+    });
+    jednotlive.forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (el) {
+        if (el.classList.contains('reveal') || el.querySelector('.reveal')) return;
+        el.classList.add('reveal');
+        items.push(el);
+      });
+    });
+    // Odhalí vše, co je v okně nebo už nad ním (i při skoku kotvou / rychlém scrollu nic nezůstane skryté).
+    var cekajici = items.slice();
+    var tick = false;
+    function odhal() {
+      tick = false;
+      var hranice = window.innerHeight * 0.92;
+      cekajici = cekajici.filter(function (el) {
+        if (el.getBoundingClientRect().top < hranice) { el.classList.add('is-visible'); return false; }
+        return true;
+      });
+      if (!cekajici.length) { window.removeEventListener('scroll', naScroll); window.removeEventListener('resize', naScroll); }
+    }
+    function naScroll() { if (!tick) { tick = true; window.requestAnimationFrame(odhal); } }
+    window.addEventListener('scroll', naScroll, { passive: true });
+    window.addEventListener('resize', naScroll);
+    window.addEventListener('load', naScroll);
+    odhal();
+  }
+
   // Mobilní menu
   var header = document.querySelector('.site-header');
   var toggle = document.querySelector('.nav-toggle');

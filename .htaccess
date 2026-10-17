@@ -1,6 +1,8 @@
 # Glow by Petra Jahodová – ochrana webrootu (Apache 2.4, Active24)
 
 Options -Indexes
+# Výchozí stránka je náš index.html (na hostingu může ležet parkovací index.php Active24)
+DirectoryIndex index.html index.php
 AddDefaultCharset UTF-8
 
 <IfModule mod_rewrite.c>

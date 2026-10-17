@@ -1,0 +1,35 @@
+# Glow by Petra Jahodová – ochrana webrootu (Apache 2.4, Active24)
+
+Options -Indexes
+AddDefaultCharset UTF-8
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Vynucení HTTPS (mimo lokální vývoj)
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # Složka .git nesmí být nikdy přístupná
+  RewriteRule (^|/)\.git(/|$) - [F,L]
+</IfModule>
+
+# Citlivé soubory: databázové skripty, poznámky, konfigurace, skryté soubory
+<FilesMatch "^(database\.sql|\..*|.*\.(md|env|json|sql|lock|dist))$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Bezpečnostní hlavičky
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

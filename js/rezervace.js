@@ -1,108 +1,57 @@
 /* ==========================================================================
    Glow by Petra Jahodová – online rezervace ve 3 krocích
-   PILOTNÍ VERZE – jen frontend. Nic se neodesílá, žádné externí požadavky.
-   Čisté vanilla JS (ES2017), bez knihoven.
+   Data bere z PHP API (api/config.php, api/availability.php, api/bookings.php).
+   Čisté vanilla JS (ES2017: async/await, bez knihoven).
 
    Struktura:
-     1. KONFIG – služby, otevírací doba podle dne a služby, ukázkové blokace
-        (později se jen přepíše daty z backendu, např. availability.php)
-     2. pomocné funkce pro data – VŽDY lokální čas (žádné UTC / toISOString)
-     3. stav rezervace + vykreslení kroků (služba → datum a čas → údaje)
-     4. validace formuláře a potvrzení
+     1. pomocné funkce – data VŽDY v lokálním čase (žádné UTC / toISOString), formátování, volání API
+     2. stav rezervace a prvky stránky
+     3. KROK 1 – služby (více najednou, zaškrtávací volby) a počet osob
+     4. KROK 2 – kalendář (dny z API) a časy (sloty z API)
+     5. KROK 3 – formulář, validace, odeslání, potvrzení
+     6. START – načtení konfigurace z API, předvýběr z URL (?sluzba=denni,uces-jednoduchy)
+
+   Tvar odpovědí API (viz api/*.php):
+     config.php        → { ok, minDate, maxDate, services: {id: {name, price, duration, group, from?, maxPersons?}},
+                            groups: [názvy skupin], rules: [{days, from, to, label, services, months?}], limits: {…} }
+     availability.php  → ?month=YYYY-MM  { ok, days: {'YYYY-MM-DD': true|false}, hint }
+                         ?date=YYYY-MM-DD { ok, slots: ['15:30', …], reason|null, duration, price, priceLabel, label }
+     bookings.php POST → { ok, id, summary: {service, date, time, persons, price, duration} }
+                         chyba: { ok: false, error } se stavem 400 / 409 (termín mezitím obsazen) / 429 / 500
    ========================================================================== */
 (function () {
   'use strict';
 
-  /* ------------------------------------------------------------------
-     1. KONFIGURACE
-     Dny v týdnu používají číslování JS Date.getDay(): 0 = neděle, 1 = pondělí … 6 = sobota.
-     Měsíce v pravidlech jsou 1–12 (leden = 1), ať se to dobře čte.
-     ------------------------------------------------------------------ */
-  const KONFIG = {
-    minDniPredem: 2,        // nejpozději 2 dny předem
-    maxMesicuDopredu: 2,    // nejdéle 2 měsíce dopředu
-    krokSlotuMin: 30,       // časy po 30 minutách
-    maxOsob: 4,
-
-    // Skupiny, ve kterých se služby nabízejí (pořadí = pořadí na stránce)
-    skupiny: [
-      { nazev: 'Líčení', sluzby: ['denni', 'plesove', 'festivalove', 'foceni'] },
-      { nazev: 'Účesy', sluzby: ['uces-jednoduchy', 'uces-slozity'] },
-      { nazev: 'Balíčky – líčení a účes', sluzby: ['balicek-ples', 'balicek-foto'] },
-      { nazev: 'Svatební zkoušky', sluzby: ['zkouska-liceni', 'zkouska-uces'] },
-      { nazev: 'Kurz', sluzby: ['kurz'] }
-    ],
-
-    // Služby: cena v Kč (konečná, neplátce DPH), délka v minutách pro 1 osobu.
-    // „od: true“ = cena je „od“ (dle složitosti). „akuzativ“ = tvar do věty „… dělám v úterý“.
-    // „jenJedna: true“ = službu nelze objednat pro víc osob.
-    sluzby: {
-      'denni':           { nazev: 'Denní líčení',                akuzativ: 'denní líčení',                 cena: 500,  delka: 30 },
-      'plesove':         { nazev: 'Plesové líčení',              akuzativ: 'plesové líčení',               cena: 1000, delka: 50 },
-      'festivalove':     { nazev: 'Festivalové líčení',          akuzativ: 'festivalové líčení',           cena: 1000, delka: 60, od: true },
-      'foceni':          { nazev: 'Líčení na focení',            akuzativ: 'líčení na focení',             cena: 800,  delka: 45 },
-      'uces-jednoduchy': { nazev: 'Účes – jednoduchá úprava',    akuzativ: 'jednoduchou úpravu účesu',     cena: 500,  delka: 60 }, // ceník: 30–60 min, blokujeme maximum
-      'uces-slozity':    { nazev: 'Účes – složitější',           akuzativ: 'složitější účes',              cena: 800,  delka: 60 },
-      'balicek-ples':    { nazev: 'Plesový balíček',             akuzativ: 'plesový balíček',              cena: 1500, delka: 90 },
-      'balicek-foto':    { nazev: 'Foto balíček',                akuzativ: 'foto balíček',                 cena: 1200, delka: 75 },
-      'zkouska-liceni':  { nazev: 'Zkouška svatebního líčení',   akuzativ: 'zkoušku svatebního líčení',    cena: 1000, delka: 75 },
-      'zkouska-uces':    { nazev: 'Zkouška svatebního účesu',    akuzativ: 'zkoušku svatebního účesu',     cena: 900,  delka: 60 }, // ceník: 30–60 min, blokujeme maximum
-      'kurz':            { nazev: 'Kurz sebelíčení',             akuzativ: 'kurz sebelíčení',              cena: 3000, delka: 120, jenJedna: true }
-    },
-
-    // Pravidla dostupnosti: kdy (dny, případně jen některé měsíce) a které služby.
-    // Pondělí tu není = nic. Sobota je primárně pro svatby, v plesové sezóně (XI–III) i pro plesy (Petra, 14. 10. 2026).
-    pravidla: [
-      {
-        dny: [2, 3, 4], od: '15:30', do: '19:00',
-        popis: 'v úterý, ve středu a ve čtvrtek 15:30–19:00',
-        sluzby: ['denni', 'foceni', 'balicek-foto', 'uces-jednoduchy', 'uces-slozity', 'zkouska-liceni', 'zkouska-uces', 'kurz']
-      },
-      {
-        dny: [5, 6], od: '15:00', do: '20:00', mesice: [11, 12, 1, 2, 3],
-        popis: 'v pátek a v sobotu 15:00–20:00, jen od listopadu do března',
-        sluzby: ['plesove', 'festivalove', 'balicek-ples', 'uces-jednoduchy', 'uces-slozity']
-      },
-      {
-        dny: [0], od: '10:00', do: '13:00',
-        popis: 'v neděli 10:00–13:00',
-        sluzby: ['zkouska-liceni', 'zkouska-uces']
-      }
-    ],
-
-    // Ukázkové obsazené termíny (deterministicky, ať je vidět, jak vypadá obsazenost).
-    // Z backendu přijdou konkrétní data ve tvaru { datum: 'RRRR-MM-DD', od: 'HH:MM', do: 'HH:MM' }.
-    // Aby ukázka nezastarala, jde ji zadat i relativně: „poradi“-té úterý (denVTydnu) v rezervovatelném období.
-    // Bez „od“/„do“ je obsazený celý den.
-    blokace: [
-      { denVTydnu: 2, poradi: 1, od: '15:30', do: '17:00' },  // první rezervovatelné úterý: obsazeno 15:30–17:00
-      { denVTydnu: 0, poradi: 2 }                             // druhá neděle: obsazená celá
-      // { datum: '2026-11-13', od: '15:00', do: '20:00' }    // takto bude vypadat blokace z backendu
-    ]
-  };
+  const API = 'api/';
+  const TELEFON = '+420 604 643 157';
+  const TELEFON_HREF = 'tel:+420604643157';
 
   const DNY = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
   const DNY_KRATCE = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne']; // kalendář začíná pondělím
   const MESICE = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
   const MESICE_2P = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
-  const NBSP = ' ';
+  const NBSP = ' ';
 
   /* ------------------------------------------------------------------
-     2. POMOCNÉ FUNKCE – data a formátování (lokální čas)
+     1. POMOCNÉ FUNKCE – data a formátování (lokální čas)
      ------------------------------------------------------------------ */
   const dvoj = n => (n < 10 ? '0' : '') + n;
 
   // Půlnoc daného dne v lokálním čase
   const den = (y, m, d) => new Date(y, m, d, 0, 0, 0, 0);
-  const pridejDny = (d, n) => den(d.getFullYear(), d.getMonth(), d.getDate() + n);
   const prvniVMesici = d => den(d.getFullYear(), d.getMonth(), 1);
   const stejnyDen = (a, b) => a.getTime() === b.getTime();
 
-  // Klíč 'RRRR-MM-DD' z lokálních složek (ne toISOString – to by v zimě/létě ujelo o den)
+  // 'RRRR-MM-DD' z lokálních složek (ne toISOString – to by v zimě/létě ujelo o den) a zpět
   const klic = d => d.getFullYear() + '-' + dvoj(d.getMonth() + 1) + '-' + dvoj(d.getDate());
+  const klicMesice = d => d.getFullYear() + '-' + dvoj(d.getMonth() + 1);
+  function zRetezce(s) {
+    const p = String(s || '').split('-');
+    return den(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
 
   // 'HH:MM' <-> minuty od půlnoci
-  const naMinuty = hhmm => { const p = hhmm.split(':'); return Number(p[0]) * 60 + Number(p[1]); };
+  const naMinuty = hhmm => { const p = String(hhmm).split(':'); return Number(p[0]) * 60 + Number(p[1]); };
   const naCas = m => dvoj(Math.floor(m / 60)) + ':' + dvoj(m % 60);
 
   const velkePismeno = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -125,87 +74,47 @@
 
   const formatOsoby = n => n + NBSP + (n === 1 ? 'osoba' : 'osoby');
 
-  // „a, b a c“
-  function spoj(pole) {
-    if (pole.length <= 1) return pole.join('');
-    return pole.slice(0, -1).join(', ') + ' a ' + pole[pole.length - 1];
+  /* ---------- Volání API ----------
+     Vrací rozparsovaný JSON. Při HTTP chybě nebo { ok: false } vyhodí Error s .status a .data,
+     message je hláška z API (`error`), nebo obecná hláška, když server nevrátil JSON. */
+  async function api(cesta, options) {
+    const nastaveni = Object.assign({ credentials: 'same-origin' }, options || {});
+    nastaveni.headers = Object.assign({ Accept: 'application/json' }, nastaveni.headers || {});
+    let res;
+    try {
+      res = await fetch(API + cesta, nastaveni);
+    } catch (e) {
+      const err = new Error('Nepodařilo se spojit se serverem. Zkontroluj prosím připojení a' + NBSP + 'zkus to znovu.');
+      err.status = 0;
+      throw err;
+    }
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* server nevrátil JSON */ }
+    if (!res.ok || !data || data.ok === false) {
+      const err = new Error(data && data.error ? data.error : 'Server teď neodpovídá (' + res.status + '). Zkus to prosím za chvíli.');
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
   }
 
   /* ------------------------------------------------------------------
-     Rezervovatelné období a blokace
+     2. STAV A PRVKY
      ------------------------------------------------------------------ */
-  const dnes = (() => { const t = new Date(); return den(t.getFullYear(), t.getMonth(), t.getDate()); })();
-  const minDatum = pridejDny(dnes, KONFIG.minDniPredem);
-  // Max. X měsíců dopředu – na konci měsíce ořežeme den na délku cílového měsíce (31. 12. → 28. 2.)
-  const cil = den(dnes.getFullYear(), dnes.getMonth() + KONFIG.maxMesicuDopredu, 1);
-  const posledniDen = den(cil.getFullYear(), cil.getMonth() + 1, 0).getDate();
-  const maxDatum = den(cil.getFullYear(), cil.getMonth(), Math.min(dnes.getDate(), posledniDen));
+  let CFG = null;          // konfigurace z api/config.php
+  let minDatum = null;     // Date – první rezervovatelný den
+  let maxDatum = null;     // Date – poslední rezervovatelný den
+  let cacheDnu = {};       // 'služby|osoby|RRRR-MM' → { days, hint } (ať se při listování neptáme znovu)
+  let pozadavek = 0;       // pořadové číslo požadavku – starší odpověď nesmí přepsat novější
 
-  // Mapa 'RRRR-MM-DD' -> [{ od, do }] v minutách; relativní blokace se tu převedou na konkrétní dny
-  const blokaceMapa = {};
-  (function pripravBlokace() {
-    const pocty = {}; // kolikáté úterý/neděle… v období už jsme potkali
-    for (let d = minDatum; d <= maxDatum; d = pridejDny(d, 1)) {
-      const wd = d.getDay();
-      pocty[wd] = (pocty[wd] || 0) + 1;
-      KONFIG.blokace.forEach(b => {
-        const sedi = b.datum ? b.datum === klic(d) : (b.denVTydnu === wd && b.poradi === pocty[wd]);
-        if (!sedi) return;
-        const k = klic(d);
-        (blokaceMapa[k] = blokaceMapa[k] || []).push({
-          od: b.od ? naMinuty(b.od) : 0,
-          do: b.do ? naMinuty(b.do) : 24 * 60
-        });
-      });
-    }
-  })();
-
-  // Překrývá se interval [od, do) s nějakou blokací v daný den?
-  function jeObsazeno(d, od, doM) {
-    return (blokaceMapa[klic(d)] || []).some(b => od < b.do && doM > b.od);
-  }
-
-  // Pravidlo, podle kterého se služba v daný den dělá (nebo null)
-  function pravidloProDen(d, sluzbaId) {
-    const wd = d.getDay(), mesic = d.getMonth() + 1;
-    return KONFIG.pravidla.find(p =>
-      p.dny.indexOf(wd) !== -1 &&
-      p.sluzby.indexOf(sluzbaId) !== -1 &&
-      (!p.mesice || p.mesice.indexOf(mesic) !== -1)
-    ) || null;
-  }
-
-  // Sloty pro den: null = služba se ten den nedělá; jinak pole { od, do, obsazeno }.
-  // Slot je platný, jen když začátek + celková délka ≤ zavírací čas.
-  function slotyProDen(d, sluzbaId, delkaCelkem) {
-    const p = pravidloProDen(d, sluzbaId);
-    if (!p) return null;
-    const otevreno = naMinuty(p.od), zavreno = naMinuty(p.do);
-    const sloty = [];
-    for (let t = otevreno; t + delkaCelkem <= zavreno; t += KONFIG.krokSlotuMin) {
-      sloty.push({ od: t, do: t + delkaCelkem, obsazeno: jeObsazeno(d, t, t + delkaCelkem) });
-    }
-    return sloty;
-  }
-
-  const jeVObdobi = d => d >= minDatum && d <= maxDatum;
-
-  // „Plesové líčení dělám v pátek 15:00–20:00, jen od listopadu do března.“
-  function textDostupnosti(sluzbaId) {
-    const s = KONFIG.sluzby[sluzbaId];
-    const popisy = KONFIG.pravidla.filter(p => p.sluzby.indexOf(sluzbaId) !== -1).map(p => p.popis);
-    return velkePismeno(s.akuzativ) + ' dělám ' + spoj(popisy) + '.';
-  }
-
-  /* ------------------------------------------------------------------
-     3. STAV A PRVKY
-     ------------------------------------------------------------------ */
   const stav = {
-    sluzba: null,   // id služby
+    sluzby: [],     // id vybraných služeb (v pořadí katalogu)
     osoby: 1,
     datum: null,    // Date (půlnoc, lokálně)
     cas: null,      // minuty od půlnoci
-    mesic: prvniVMesici(minDatum) // zobrazený měsíc v kalendáři
+    mesic: null,    // zobrazený měsíc v kalendáři (Date, 1. den)
+    sloty: []       // volné začátky pro vybraný den ('HH:MM')
   };
 
   const $ = (sel, ctx) => (ctx || document).querySelector(sel);
@@ -217,6 +126,7 @@
     osobyHint: $('#rez-osoby-hint'),
     dal1: $('#rez-dal-1'),
     dal1Hint: $('#rez-dal-1-hint'),
+    krok2Chyba: $('#rez-krok2-chyba'),
     calNotice: $('#rez-cal-notice'),
     calPrev: $('#rez-cal-prev'),
     calNext: $('#rez-cal-next'),
@@ -225,8 +135,10 @@
     slotyBox: $('#rez-sloty-box'),
     slotyH: $('#rez-sloty-h'),
     sloty: $('#rez-sloty'),
+    slotyInfo: $('#rez-sloty-info'),
     form: $('#rez-form'),
     formChyby: $('#rez-form-chyby'),
+    odeslat: null, // doplní se po nalezení formuláře
     kontejner: $('#rez-kroky'),
     sum: {
       sluzba: $('#sum-sluzba'), osoby: $('#sum-osoby'), delka: $('#sum-delka'),
@@ -234,20 +146,39 @@
     }
   };
   if (!el.kroky[0] || !el.form) return; // nejsme na stránce rezervace
+  el.odeslat = $('button[type="submit"]', el.form);
 
-  const sluzba = () => (stav.sluzba ? KONFIG.sluzby[stav.sluzba] : null);
-  const delkaCelkem = () => (sluzba() ? sluzba().delka * stav.osoby : 0);
-  const cenaCelkem = () => (sluzba() ? sluzba().cena * stav.osoby : 0);
+  const sluzba = id => CFG.services[id];
+  const vybraneSluzby = () => stav.sluzby.map(sluzba);
+  const delkaCelkem = () => vybraneSluzby().reduce((s, x) => s + x.duration, 0) * stav.osoby;
+  const cenaCelkem = () => vybraneSluzby().reduce((s, x) => s + x.price, 0) * stav.osoby;
+  const cenaOd = () => vybraneSluzby().some(x => x.from);
+  const nazevSluzeb = () => vybraneSluzby().map(x => x.name).join(' + ');
+
+  // Nejvyšší povolený počet osob pro aktuální výběr (kurz je jen pro 1–2 osoby)
+  function maxOsobProVyber() {
+    let max = CFG.limits.maxPersons;
+    vybraneSluzby().forEach(s => { if (s.maxPersons) max = Math.min(max, s.maxPersons); });
+    return max;
+  }
+
+  // Jde vybrané služby objednat v jeden den? (existuje pravidlo, které povoluje všechny)
+  function kombinaceJde() {
+    if (!stav.sluzby.length) return false;
+    return CFG.rules.some(r => stav.sluzby.every(id => r.services.indexOf(id) !== -1));
+  }
+
+  const jeVObdobi = d => d >= minDatum && d <= maxDatum;
 
   function oznam(text) { el.status.textContent = text; } // aria-live hláška pro čtečky
 
   /* ---------- Souhrn vpravo ---------- */
   function vykresliSouhrn() {
-    const s = sluzba();
-    el.sum.sluzba.textContent = s ? s.nazev : '–';
-    el.sum.osoby.textContent = s ? formatOsoby(stav.osoby) : '–';
-    el.sum.delka.textContent = s ? formatDelka(delkaCelkem()) : '–';
-    el.sum.cena.textContent = s ? formatCena(cenaCelkem(), s.od) : '–';
+    const ma = stav.sluzby.length > 0;
+    el.sum.sluzba.textContent = ma ? nazevSluzeb() : '–';
+    el.sum.osoby.textContent = ma ? formatOsoby(stav.osoby) : '–';
+    el.sum.delka.textContent = ma ? formatDelka(delkaCelkem()) : '–';
+    el.sum.cena.textContent = ma ? formatCena(cenaCelkem(), cenaOd()) : '–';
     el.sum.datum.textContent = stav.datum ? formatDatum(stav.datum) : '–';
     el.sum.cas.textContent = stav.cas !== null ? naCas(stav.cas) + '–' + naCas(stav.cas + delkaCelkem()) : '–';
   }
@@ -271,105 +202,163 @@
     h.focus({ preventScroll: true });
   }
 
+  // Hláška v kroku 2 (např. „termín mezitím někdo obsadil“)
+  function chybaKrok2(text) {
+    el.krok2Chyba.textContent = text || '';
+    el.krok2Chyba.hidden = !text;
+  }
+
   /* ------------------------------------------------------------------
-     KROK 1 – služba a počet osob
+     3. KROK 1 – služby (více najednou) a počet osob
      ------------------------------------------------------------------ */
   function vykresliSluzby() {
-    KONFIG.skupiny.forEach(g => {
+    el.sluzby.innerHTML = '';
+    const ids = Object.keys(CFG.services);
+
+    CFG.groups.forEach(nazev => {
+      const vSkupine = ids.filter(id => CFG.services[id].group === nazev);
+      if (!vSkupine.length) return;
       const box = document.createElement('div');
       box.className = 'rez-group';
       const h = document.createElement('h3');
-      h.textContent = g.nazev;
+      h.textContent = nazev;
       const grid = document.createElement('div');
       grid.className = 'choice-grid';
       grid.setAttribute('role', 'group');
-      grid.setAttribute('aria-label', g.nazev);
-      g.sluzby.forEach(id => {
-        const s = KONFIG.sluzby[id];
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'choice';
-        b.dataset.sluzba = id;
-        b.setAttribute('aria-pressed', 'false');
-        b.innerHTML = '<b></b><small></small>';
-        $('b', b).textContent = s.nazev;
-        $('small', b).textContent = formatDelka(s.delka) + ' · ' + formatCena(s.cena, s.od);
-        b.addEventListener('click', () => vyberSluzbu(id));
-        grid.appendChild(b);
+      grid.setAttribute('aria-label', nazev);
+      vSkupine.forEach(id => {
+        const s = CFG.services[id];
+        const lab = document.createElement('label');
+        lab.className = 'choice';
+        lab.dataset.sluzba = id;
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'sluzba';
+        input.value = id;
+        const b = document.createElement('b');
+        b.textContent = s.name;
+        const small = document.createElement('small');
+        small.textContent = formatDelka(s.duration) + ' · ' + formatCena(s.price, s.from);
+        lab.appendChild(input);
+        lab.appendChild(b);
+        lab.appendChild(small);
+        input.addEventListener('change', () => prepniSluzbu(id, input.checked));
+        grid.appendChild(lab);
       });
       box.appendChild(h);
       box.appendChild(grid);
       el.sluzby.appendChild(box);
     });
 
-    for (let n = 1; n <= KONFIG.maxOsob; n++) {
+    el.osoby.innerHTML = '';
+    for (let n = 1; n <= CFG.limits.maxPersons; n++) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'choice';
       b.dataset.osoby = String(n);
       b.setAttribute('aria-pressed', n === stav.osoby ? 'true' : 'false');
-      b.innerHTML = '<b></b>';
-      $('b', b).textContent = formatOsoby(n);
+      const t = document.createElement('b');
+      t.textContent = formatOsoby(n);
+      b.appendChild(t);
       b.addEventListener('click', () => vyberOsoby(n));
       el.osoby.appendChild(b);
     }
   }
 
-  function vyberSluzbu(id) {
-    stav.sluzba = id;
-    const s = KONFIG.sluzby[id];
-    el.sluzby.querySelectorAll('.choice').forEach(b => b.setAttribute('aria-pressed', b.dataset.sluzba === id ? 'true' : 'false'));
+  // Zaškrtnutí / odškrtnutí služby – pořadí držíme podle katalogu
+  function prepniSluzbu(id, zaskrtnuto) {
+    const poradi = Object.keys(CFG.services);
+    stav.sluzby = stav.sluzby.filter(x => x !== id);
+    if (zaskrtnuto) stav.sluzby.push(id);
+    stav.sluzby.sort((a, b) => poradi.indexOf(a) - poradi.indexOf(b));
+    aktualizujKrok1();
 
-    // Kurz je jen pro jednu osobu
-    if (s.jenJedna) stav.osoby = 1;
-    el.osoby.querySelectorAll('.choice').forEach(b => {
-      const n = Number(b.dataset.osoby);
-      const zakazano = Boolean(s.jenJedna) && n > 1;
-      b.disabled = zakazano;
-      b.setAttribute('aria-disabled', zakazano ? 'true' : 'false');
-      b.setAttribute('aria-pressed', n === stav.osoby ? 'true' : 'false');
-    });
-    el.osobyHint.textContent = s.jenJedna
-      ? 'Kurz sebelíčení je individuální – jen pro jednu osobu.'
-      : 'Líčím jednu osobu po druhé, délka i' + NBSP + 'cena se násobí počtem osob.';
-
-    el.dal1.disabled = false;
-    el.dal1Hint.hidden = true;
-    vykresliSouhrn();
-    oznam('Vybráno: ' + s.nazev + ', ' + formatOsoby(stav.osoby) + '. Pokračuj na výběr termínu.');
+    const s = sluzba(id);
+    if (!stav.sluzby.length) oznam('Žádná služba není vybraná.');
+    else if (!kombinaceJde()) oznam((zaskrtnuto ? 'Přidáno: ' : 'Odebráno: ') + s.name + '. ' + el.dal1Hint.textContent);
+    else oznam((zaskrtnuto ? 'Přidáno: ' : 'Odebráno: ') + s.name + '. Vybráno: ' + nazevSluzeb() + ', ' + formatOsoby(stav.osoby) + ', ' + formatDelka(delkaCelkem()) + ', ' + formatCena(cenaCelkem(), cenaOd()) + '.');
   }
 
   function vyberOsoby(n) {
     stav.osoby = n;
-    el.osoby.querySelectorAll('.choice').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.osoby) === n ? 'true' : 'false'));
+    aktualizujKrok1();
+    if (stav.sluzby.length) oznam(formatOsoby(n) + ': celkem ' + formatDelka(delkaCelkem()) + ', ' + formatCena(cenaCelkem(), cenaOd()) + '.');
+  }
+
+  // Sladí zaškrtnutí, počet osob, nápovědy a tlačítko „Pokračovat“ se stavem
+  function aktualizujKrok1() {
+    const max = maxOsobProVyber();
+    if (stav.osoby > max) stav.osoby = max;
+
+    el.sluzby.querySelectorAll('.choice').forEach(lab => {
+      const vybrana = stav.sluzby.indexOf(lab.dataset.sluzba) !== -1;
+      lab.classList.toggle('is-selected', vybrana);
+      const input = $('input', lab);
+      if (input && input.checked !== vybrana) input.checked = vybrana;
+    });
+
+    el.osoby.querySelectorAll('.choice').forEach(b => {
+      const n = Number(b.dataset.osoby);
+      const zakazano = n > max;
+      b.disabled = zakazano;
+      b.setAttribute('aria-disabled', zakazano ? 'true' : 'false');
+      b.setAttribute('aria-pressed', n === stav.osoby ? 'true' : 'false');
+    });
+
+    // Nápověda k počtu osob
+    if (max < CFG.limits.maxPersons) {
+      const omezujici = vybraneSluzby().filter(s => s.maxPersons === max).map(s => s.name).join(' a ');
+      el.osobyHint.textContent = omezujici + (max === 1 ? ' je jen pro jednu osobu.' : ' je nejvýše pro ' + formatOsoby(max) + '.');
+    } else {
+      el.osobyHint.textContent = 'Líčím jednu osobu po druhé, délka i' + NBSP + 'cena se násobí počtem osob.';
+    }
+
+    // Tlačítko dál + nápověda pod ním
+    let hint = '';
+    if (!stav.sluzby.length) hint = 'Nejdřív vyber službu – můžeš i' + NBSP + 'několik najednou.';
+    else if (!kombinaceJde()) hint = 'Tuhle kombinaci služeb bohužel nejde objednat v' + NBSP + 'jednom termínu (dělám je v' + NBSP + 'jiné dny) – vyber je prosím zvlášť.';
+    el.dal1.disabled = Boolean(hint);
+    el.dal1Hint.textContent = hint;
+    el.dal1Hint.hidden = !hint;
+    el.dal1Hint.classList.toggle('form-note--warn', Boolean(hint) && stav.sluzby.length > 0);
+
     vykresliSouhrn();
   }
 
   el.dal1.addEventListener('click', () => {
-    if (!stav.sluzba) return;
-    const s = sluzba();
+    if (!stav.sluzby.length || !kombinaceJde()) return;
     stav.datum = null;
     stav.cas = null;
+    stav.sloty = [];
     stav.mesic = prvniVMesici(minDatum);
-    nastavKrok(1, 'done', s.nazev + ' · ' + formatOsoby(stav.osoby) + ' · ' + formatDelka(delkaCelkem()) + ' · ' + formatCena(cenaCelkem(), s.od));
+    el.slotyBox.hidden = true;
+    chybaKrok2('');
+    nastavKrok(1, 'done', nazevSluzeb() + ' · ' + formatOsoby(stav.osoby) + ' · ' + formatDelka(delkaCelkem()) + ' · ' + formatCena(cenaCelkem(), cenaOd()));
     nastavKrok(2, 'active');
     nastavKrok(3, 'todo');
-    vykresliKalendar();
     vykresliSouhrn();
     zamerKrok(2);
     oznam('Krok 2: vyber den a čas.');
+    vykresliKalendar();
   });
 
   /* ------------------------------------------------------------------
-     KROK 2 – kalendář a časy
+     4. KROK 2 – kalendář a časy (vše z API)
      ------------------------------------------------------------------ */
-  function vykresliKalendar() {
-    const m = stav.mesic;
-    const delka = delkaCelkem();
-    el.calNadpis.textContent = velkePismeno(MESICE[m.getMonth()]) + ' ' + m.getFullYear();
-    el.calPrev.disabled = m <= prvniVMesici(minDatum);
-    el.calNext.disabled = m >= prvniVMesici(maxDatum);
+  const dotazSluzby = () => 'services=' + encodeURIComponent(stav.sluzby.join(',')) + '&persons=' + stav.osoby;
 
+  // Volné dny v měsíci – z cache, nebo z API
+  async function nactiDny(klicM) {
+    const k = stav.sluzby.join(',') + '|' + stav.osoby + '|' + klicM;
+    if (!cacheDnu[k]) {
+      const data = await api('availability.php?' + dotazSluzby() + '&month=' + klicM);
+      cacheDnu[k] = { days: data.days || {}, hint: data.hint || '' };
+    }
+    return cacheDnu[k];
+  }
+
+  // Mřížka kalendáře: hlavička dnů + prázdná políčka + dny. Bez dat jsou všechny dny neaktivní („načítám“).
+  function postavMrizku(m, dny) {
     el.cal.innerHTML = '';
     DNY_KRATCE.forEach(z => {
       const w = document.createElement('div');
@@ -378,13 +367,12 @@
       w.textContent = z;
       el.cal.appendChild(w);
     });
-
     // Prázdná políčka před 1. dnem (kalendář začíná pondělím: Po = 0 … Ne = 6)
     const odsazeni = (m.getDay() + 6) % 7;
     for (let i = 0; i < odsazeni; i++) el.cal.appendChild(document.createElement('div'));
 
     const pocetDni = den(m.getFullYear(), m.getMonth() + 1, 0).getDate();
-    let volnychVMesici = 0;
+    let volnych = 0;
     for (let d = 1; d <= pocetDni; d++) {
       const datum = den(m.getFullYear(), m.getMonth(), d);
       const b = document.createElement('button');
@@ -394,24 +382,21 @@
       let popis = formatDatum(datum);
       let aktivni = false;
 
-      if (jeVObdobi(datum)) {
-        const sloty = slotyProDen(datum, stav.sluzba, delka);
-        if (sloty && sloty.some(s => !s.obsazeno)) {
-          aktivni = true;
-          b.classList.add('cal-day--volny');
-        } else if (sloty && sloty.length) {
-          b.classList.add('cal-day--obsazeny');
-          popis += ' – obsazeno';
-        } else {
-          popis += ' – tento den službu nedělám';
-        }
-      } else {
+      if (!jeVObdobi(datum)) {
         popis += ' – mimo rezervovatelné období';
+      } else if (!dny) {
+        popis += ' – načítám';
+      } else if (dny[klic(datum)] === true) {
+        aktivni = true;
+        b.classList.add('cal-day--volny');
+      } else {
+        b.classList.add('cal-day--obsazeny');
+        popis += ' – nemám volno';
       }
 
       b.setAttribute('aria-label', popis);
       if (aktivni) {
-        volnychVMesici++;
+        volnych++;
         b.setAttribute('aria-pressed', stav.datum && stejnyDen(stav.datum, datum) ? 'true' : 'false');
         b.addEventListener('click', () => vyberDen(datum));
       } else {
@@ -420,34 +405,59 @@
       }
       el.cal.appendChild(b);
     }
-
-    vykresliCalNotice(volnychVMesici);
+    return volnych;
   }
 
-  // Vysvětlení pod kalendářem – kdy službu dělám, případně proč není nic volného
-  function vykresliCalNotice(volnychVMesici) {
-    const delka = delkaCelkem();
-    let text = textDostupnosti(stav.sluzba);
+  async function vykresliKalendar() {
+    const m = stav.mesic;
+    const klicM = klicMesice(m);
+    el.calNadpis.textContent = velkePismeno(MESICE[m.getMonth()]) + ' ' + m.getFullYear();
+    el.calPrev.disabled = m <= prvniVMesici(minDatum);
+    el.calNext.disabled = m >= prvniVMesici(maxDatum);
 
-    if (volnychVMesici === 0) {
-      // Je vůbec v celém období nějaký den podle pravidel? A vejde se tam délka?
-      let denPodlePravidel = false, slotVObdobi = false;
-      for (let d = minDatum; d <= maxDatum; d = pridejDny(d, 1)) {
-        const sloty = slotyProDen(d, stav.sluzba, delka);
-        if (sloty) denPodlePravidel = true;
-        if (sloty && sloty.some(s => !s.obsazeno)) { slotVObdobi = true; break; }
-      }
-      if (slotVObdobi) {
-        text += ' V' + NBSP + 'tomto měsíci volný termín nemám, zkus prosím další měsíc.';
-      } else if (denPodlePravidel && stav.osoby > 1) {
-        text += ' Pro ' + formatOsoby(stav.osoby) + ' (' + formatDelka(delka) + ') se do otevírací doby nevejdu – zkus méně osob, nebo mi napiš a' + NBSP + 'domluvíme se.';
-      } else {
-        text += ' V' + NBSP + 'nejbližších dvou měsících bohužel volný termín nemám. Napiš mi nebo zavolej a' + NBSP + 'domluvíme se.';
-      }
-    } else {
+    postavMrizku(m, null);
+    el.cal.setAttribute('aria-busy', 'true');
+    el.calNotice.textContent = 'Načítám volné dny…';
+
+    const id = ++pozadavek;
+    let data;
+    try {
+      data = await nactiDny(klicM);
+    } catch (e) {
+      if (id !== pozadavek) return;
+      el.cal.removeAttribute('aria-busy');
+      zobrazChybuNacitani(el.calNotice, 'Volné dny se nepodařilo načíst. ' + e.message, vykresliKalendar);
+      return;
+    }
+    // Mezitím uživatelka přelistovala nebo změnila výběr → tuhle odpověď zahodíme
+    if (id !== pozadavek || klicMesice(stav.mesic) !== klicM) return;
+
+    el.cal.removeAttribute('aria-busy');
+    const volnych = postavMrizku(m, data.days);
+
+    // Vysvětlení pod kalendářem: kdy služby dělám (hint z API) + co dál
+    let text = data.hint;
+    if (!kombinaceJde()) {
+      // API vrátí hlášku, že kombinaci nejde objednat v jednom termínu – dny nenabízíme
+    } else if (volnych > 0) {
       text += ' Vyber si den v' + NBSP + 'kalendáři.';
+    } else if (!el.calNext.disabled) {
+      text += ' V' + NBSP + 'tomto měsíci volný termín nemám, zkus prosím další měsíc.';
+    } else {
+      text += ' V' + NBSP + 'nejbližších dvou měsících bohužel volný termín nemám. Napiš mi nebo zavolej a' + NBSP + 'domluvíme se.';
     }
     el.calNotice.textContent = text;
+  }
+
+  // Hláška o chybě načítání + tlačítko „Zkusit znovu“
+  function zobrazChybuNacitani(kam, text, znovu) {
+    kam.textContent = text + ' ';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn btn-outline btn-sm';
+    b.textContent = 'Zkusit znovu';
+    b.addEventListener('click', znovu);
+    kam.appendChild(b);
   }
 
   el.calPrev.addEventListener('click', () => {
@@ -462,46 +472,84 @@
   function vyberDen(datum) {
     stav.datum = datum;
     stav.cas = null;
-    el.cal.querySelectorAll('.cal-day[aria-pressed]').forEach(b => b.setAttribute('aria-pressed', 'false'));
-    const vybrany = Array.prototype.find.call(el.cal.querySelectorAll('.cal-day[aria-pressed]'), b => b.textContent === String(datum.getDate()));
-    if (vybrany) vybrany.setAttribute('aria-pressed', 'true');
-    vykresliSloty();
+    chybaKrok2('');
+    el.cal.querySelectorAll('.cal-day[aria-pressed]').forEach(b => {
+      b.setAttribute('aria-pressed', b.textContent === String(datum.getDate()) ? 'true' : 'false');
+    });
     vykresliSouhrn();
-    oznam('Vybrán den ' + formatDatum(datum) + '. Teď vyber čas.');
+    oznam('Vybrán den ' + formatDatum(datum) + '. Načítám volné časy.');
+    nactiSloty(true);
   }
 
-  function vykresliSloty() {
-    const sloty = slotyProDen(stav.datum, stav.sluzba, delkaCelkem()) || [];
+  // Volné časy pro vybraný den z API; zaměřit = přesunout fokus na první volný čas
+  async function nactiSloty(zamerit) {
     el.slotyBox.hidden = false;
     el.slotyH.textContent = 'Čas – ' + formatDatum(stav.datum);
     el.sloty.innerHTML = '';
-    sloty.forEach(slot => {
+    el.sloty.setAttribute('aria-busy', 'true');
+    el.slotyInfo.textContent = 'Načítám volné časy…';
+    el.slotyInfo.hidden = false;
+
+    const id = ++pozadavek;
+    const datumKlic = klic(stav.datum);
+    let data;
+    try {
+      data = await api('availability.php?' + dotazSluzby() + '&date=' + datumKlic);
+    } catch (e) {
+      if (id !== pozadavek) return;
+      el.sloty.removeAttribute('aria-busy');
+      zobrazChybuNacitani(el.slotyInfo, 'Volné časy se nepodařilo načíst. ' + e.message, () => nactiSloty(true));
+      return;
+    }
+    if (id !== pozadavek || !stav.datum || klic(stav.datum) !== datumKlic) return;
+
+    el.sloty.removeAttribute('aria-busy');
+    stav.sloty = data.slots || [];
+    const delka = typeof data.duration === 'number' ? data.duration : delkaCelkem();
+
+    if (!stav.sloty.length) {
+      el.slotyInfo.textContent = data.reason || 'Tento den už je obsazený. Vyber prosím jiný den.';
+      el.slotyInfo.hidden = false;
+      // Den už není volný – v kalendáři ho zašedneme
+      el.cal.querySelectorAll('.cal-day[aria-pressed="true"]').forEach(b => {
+        b.disabled = true;
+        b.setAttribute('aria-disabled', 'true');
+        b.removeAttribute('aria-pressed');
+        b.classList.remove('cal-day--volny');
+        b.classList.add('cal-day--obsazeny');
+      });
+      oznam(el.slotyInfo.textContent);
+      return;
+    }
+
+    el.slotyInfo.hidden = true;
+    stav.sloty.forEach(hhmm => {
+      const od = naMinuty(hhmm);
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'choice';
-      b.innerHTML = '<b></b><small></small>';
-      $('b', b).textContent = naCas(slot.od);
-      if (slot.obsazeno) {
-        $('small', b).textContent = 'obsazeno';
-        b.disabled = true;
-        b.setAttribute('aria-disabled', 'true');
-        b.setAttribute('aria-label', naCas(slot.od) + ' – obsazeno');
-      } else {
-        $('small', b).textContent = 'do ' + naCas(slot.do);
-        b.setAttribute('aria-pressed', stav.cas === slot.od ? 'true' : 'false');
-        b.setAttribute('aria-label', 'Začátek ' + naCas(slot.od) + ', konec ' + naCas(slot.do));
-        b.addEventListener('click', () => vyberCas(slot.od));
-      }
+      b.dataset.cas = hhmm;
+      const t = document.createElement('b');
+      t.textContent = hhmm;
+      const s = document.createElement('small');
+      s.textContent = 'do ' + naCas(od + delka);
+      b.appendChild(t);
+      b.appendChild(s);
+      b.setAttribute('aria-pressed', stav.cas === od ? 'true' : 'false');
+      b.setAttribute('aria-label', 'Začátek ' + hhmm + ', konec ' + naCas(od + delka));
+      b.addEventListener('click', () => vyberCas(od));
       el.sloty.appendChild(b);
     });
-    // Po výběru dne přesuň fokus na nabídku časů
-    const prvni = $('.choice:not([disabled])', el.sloty);
-    if (prvni) prvni.focus({ preventScroll: true });
+    oznam('Volné časy: ' + stav.sloty.length + '. Vyber čas.');
+    if (zamerit) {
+      const prvni = $('.choice', el.sloty);
+      if (prvni) prvni.focus({ preventScroll: true });
+    }
   }
 
   function vyberCas(od) {
     stav.cas = od;
-    el.sloty.querySelectorAll('.choice[aria-pressed]').forEach(b => b.setAttribute('aria-pressed', $('b', b).textContent === naCas(od) ? 'true' : 'false'));
+    el.sloty.querySelectorAll('.choice[aria-pressed]').forEach(b => b.setAttribute('aria-pressed', b.dataset.cas === naCas(od) ? 'true' : 'false'));
     nastavKrok(2, 'done', formatDatum(stav.datum) + ' v' + NBSP + naCas(od) + '–' + naCas(od + delkaCelkem()));
     nastavKrok(3, 'active');
     vykresliSouhrn();
@@ -511,9 +559,12 @@
 
   /* ---------- Tlačítka „Změnit“ ---------- */
   $('.rez-step-edit', el.kroky[0]).addEventListener('click', () => {
+    pozadavek++; // případné běžící načítání kalendáře zahodit
     stav.datum = null;
     stav.cas = null;
+    stav.sloty = [];
     el.slotyBox.hidden = true;
+    chybaKrok2('');
     nastavKrok(1, 'active');
     nastavKrok(2, 'todo');
     nastavKrok(3, 'todo');
@@ -525,15 +576,14 @@
     stav.cas = null;
     nastavKrok(2, 'active');
     nastavKrok(3, 'todo');
-    vykresliKalendar();
-    if (stav.datum) vykresliSloty();
     vykresliSouhrn();
     zamerKrok(2);
     oznam('Zpět na výběr termínu.');
+    vykresliKalendar().then(() => { if (stav.datum) nactiSloty(false); });
   });
 
   /* ------------------------------------------------------------------
-     4. KROK 3 – formulář, validace, potvrzení
+     5. KROK 3 – formulář, validace, odeslání, potvrzení
      ------------------------------------------------------------------ */
   function nastavChybu(id, zprava) {
     const input = $('#' + id);
@@ -579,22 +629,80 @@
     $('#' + id).addEventListener('input', () => { if (!$('#err-' + id).hidden) overFormular(); });
   });
 
+  function zobrazChybuFormulare(text) {
+    el.formChyby.textContent = text;
+    el.formChyby.hidden = false;
+    el.formChyby.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   el.form.addEventListener('submit', e => {
     e.preventDefault();
+    if (el.form.getAttribute('aria-busy') === 'true') return; // už se odesílá
     const chyby = overFormular();
     if (chyby.length) {
-      el.formChyby.textContent = 'Zkontroluj prosím označená pole (' + chyby.length + ').';
-      el.formChyby.hidden = false;
+      zobrazChybuFormulare('Zkontroluj prosím označená pole (' + chyby.length + ').');
       $('#' + chyby[0]).focus();
       return;
     }
     el.formChyby.hidden = true;
-    zobrazPotvrzeni();
+    odesli();
   });
 
-  // Potvrzení – text vyká, je odsouhlasený klientkou (nechat tak)
-  function zobrazPotvrzeni() {
-    const s = sluzba();
+  async function odesli() {
+    if (stav.datum === null || stav.cas === null) {
+      zobrazChybuFormulare('Nejdřív prosím vyber den a' + NBSP + 'čas.');
+      return;
+    }
+    const telo = {
+      services: stav.sluzby.slice(),
+      persons: stav.osoby,
+      date: klic(stav.datum),
+      time: naCas(stav.cas),
+      name: $('#jmeno').value.trim(),
+      email: $('#email').value.trim(),
+      phone: $('#telefon').value.trim(),
+      note: $('#poznamka').value.trim(),
+      gdpr: true,
+      website: ($('#website') && $('#website').value) || '' // honeypot – má zůstat prázdné
+    };
+
+    const puvodniText = el.odeslat.textContent;
+    el.form.setAttribute('aria-busy', 'true');
+    el.odeslat.disabled = true;
+    el.odeslat.textContent = 'Odesílám…';
+    oznam('Odesílám poptávku…');
+
+    try {
+      const data = await api('bookings.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(telo)
+      });
+      zobrazPotvrzeni(data.summary || {});
+    } catch (e) {
+      el.form.removeAttribute('aria-busy');
+      el.odeslat.disabled = false;
+      el.odeslat.textContent = puvodniText;
+      if (e.status === 409) {
+        // Termín mezitím někdo obsadil → zpět na krok 2, znovu načíst dny i časy
+        cacheDnu = {};
+        stav.cas = null;
+        nastavKrok(2, 'active');
+        nastavKrok(3, 'todo');
+        chybaKrok2('Tento termín mezitím někdo obsadil. Vyber si prosím jiný čas nebo den.');
+        vykresliSouhrn();
+        zamerKrok(2);
+        oznam('Tento termín mezitím někdo obsadil. Vyber prosím jiný čas.');
+        vykresliKalendar().then(() => { if (stav.datum) nactiSloty(false); });
+      } else {
+        zobrazChybuFormulare(e.message);
+        el.formChyby.focus({ preventScroll: true }); // má tabindex="-1" v HTML
+      }
+    }
+  }
+
+  // Potvrzení – text vyká, je odsouhlasený klientkou (nechat tak). Údaje bereme ze `summary` z API.
+  function zobrazPotvrzeni(summary) {
     const box = document.createElement('div');
     box.className = 'notice notice--ok rez-hotovo mt-3';
     box.setAttribute('tabindex', '-1');
@@ -602,24 +710,72 @@
       '<h2>Vaše poptávka byla přijata.</h2>' +
       '<dl><dt>Datum</dt><dd data-k="datum"></dd><dt>Služba</dt><dd data-k="sluzba"></dd><dt>Čas</dt><dd data-k="cas"></dd></dl>' +
       '<p>Brzy vás budu kontaktovat.</p>' +
-      '<p class="muted mt-2" style="font-size:13px">Pilotní verze: poptávka se zatím nikam neodeslala.</p>' +
+      '<p class="muted mt-2" style="font-size:14px">Potvrzení poptávky jsme vám poslali i' + NBSP + 'e‑mailem.</p>' +
       '<p class="mt-3"><a class="btn btn-primary" href="index.html">Zpět na úvod</a></p>';
-    $('[data-k="datum"]', box).textContent = formatDatum(stav.datum);
-    $('[data-k="sluzba"]', box).textContent = s.nazev + (stav.osoby > 1 ? ' (' + formatOsoby(stav.osoby) + ')' : '');
-    $('[data-k="cas"]', box).textContent = naCas(stav.cas) + '–' + naCas(stav.cas + delkaCelkem());
 
-    el.kontejner.innerHTML = '';
+    const sluzbaText = (summary.service || nazevSluzeb()) + (Number(summary.persons || stav.osoby) > 1 ? ' (' + formatOsoby(Number(summary.persons || stav.osoby)) + ')' : '');
+    const zacatek = summary.time ? naMinuty(summary.time) : stav.cas;
+    const delka = typeof summary.duration === 'number' ? summary.duration : delkaCelkem();
+    $('[data-k="datum"]', box).textContent = summary.date || formatDatum(stav.datum);
+    $('[data-k="sluzba"]', box).textContent = sluzbaText;
+    $('[data-k="cas"]', box).textContent = naCas(zacatek) + '–' + naCas(zacatek + delka);
+
+    // Nahradíme kroky potvrzením; aria-live hlášku necháme na místě
+    el.kroky.forEach(k => k.remove());
     el.kontejner.appendChild(box);
     box.scrollIntoView({ behavior: 'smooth', block: 'start' });
     box.focus({ preventScroll: true });
+    oznam('Vaše poptávka byla přijata. Brzy vás budu kontaktovat.');
   }
 
   /* ------------------------------------------------------------------
-     START – vykreslení a předvýběr služby z URL (?sluzba=plesove)
+     6. START – konfigurace z API a předvýběr z URL (?sluzba=plesove nebo ?sluzba=denni,uces-jednoduchy)
      ------------------------------------------------------------------ */
-  vykresliSluzby();
-  vykresliSouhrn();
+  function zobrazChybuApi() {
+    el.kroky.forEach(k => { k.hidden = true; });
+    const box = document.createElement('div');
+    box.className = 'notice mt-3';
+    box.setAttribute('role', 'alert');
+    box.innerHTML =
+      '<strong>Omlouvám se, online rezervace se teď nepodařila načíst.</strong> ' +
+      'Zavolej mi prosím na <a href="' + TELEFON_HREF + '">' + TELEFON.replace(/ /g, NBSP) + '</a> nebo mi napiš přes ' +
+      '<a class="link" href="kontakt.html">kontakt</a> a' + NBSP + 'termín domluvíme spolu. ' +
+      '<button class="btn btn-outline btn-sm" type="button">Zkusit znovu</button>';
+    $('button', box).addEventListener('click', () => location.reload());
+    el.kontejner.appendChild(box);
+    oznam('Rezervace se nepodařila načíst.');
+  }
 
-  const zUrl = new URLSearchParams(location.search).get('sluzba');
-  if (zUrl && KONFIG.sluzby[zUrl]) vyberSluzbu(zUrl);
+  async function start() {
+    el.sluzby.setAttribute('aria-busy', 'true');
+    el.sluzby.innerHTML = '<p class="muted mt-2">Načítám nabídku služeb…</p>';
+    try {
+      CFG = await api('config.php');
+      if (!CFG.services || !CFG.rules || !CFG.limits || !CFG.minDate || !CFG.maxDate) throw new Error('Neúplná konfigurace.');
+    } catch (e) {
+      el.sluzby.removeAttribute('aria-busy');
+      el.sluzby.innerHTML = '';
+      zobrazChybuApi();
+      return;
+    }
+    el.sluzby.removeAttribute('aria-busy');
+    minDatum = zRetezce(CFG.minDate);
+    maxDatum = zRetezce(CFG.maxDate);
+    stav.mesic = prvniVMesici(minDatum);
+
+    vykresliSluzby();
+    aktualizujKrok1();
+
+    // Předvýběr služeb z URL (jedna nebo více přes čárku); neznámé ignorujeme
+    const zUrl = new URLSearchParams(location.search).get('sluzba');
+    if (zUrl) {
+      const poradi = Object.keys(CFG.services);
+      stav.sluzby = zUrl.split(',').map(s => s.trim()).filter((id, i, arr) => CFG.services[id] && arr.indexOf(id) === i);
+      stav.sluzby.sort((a, b) => poradi.indexOf(a) - poradi.indexOf(b));
+      aktualizujKrok1();
+      if (stav.sluzby.length) oznam('Předvybráno: ' + nazevSluzeb() + '. Pokračuj na výběr termínu.');
+    }
+  }
+
+  start();
 })();

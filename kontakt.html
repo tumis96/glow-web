@@ -120,9 +120,13 @@
           <p>Máš dotaz k&nbsp;líčení, účesu nebo kurzu sebelíčení? Napiš, ozvu se ti zpátky. Termín si ale nejrychleji zajistíš přes <a class="link" href="rezervace.html">online rezervaci</a>.</p>
         </div>
 
-        <p class="pilot-note mt-2">Pilotní verze: formulář se zatím neodesílá. Po spuštění webu bude zpráva chodit Petře na e‑mail.</p>
-
-        <form class="form mt-3" id="kontakt-form" action="#" method="post" novalidate>
+        <form class="form mt-3" id="kontakt-form" novalidate>
+          <div class="notice notice--error" id="kontakt-chyba" role="alert" tabindex="-1" hidden></div>
+          <!-- Past na roboty: pole je mimo obrazovku, člověk ho nevyplní. Server zprávu s vyplněným polem tiše zahodí. -->
+          <div class="hp" aria-hidden="true">
+            <label for="website">Nevyplňovat</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
           <div class="form-row">
             <div class="field">
               <label for="jmeno">Jméno a&nbsp;příjmení <span aria-hidden="true">*</span></label>
@@ -153,8 +157,8 @@
             <span class="field-error" id="gdpr-error">Bez souhlasu ti bohužel nemůžu odpovědět.</span>
           </div>
           <p class="form-note">Položky označené * jsou povinné.</p>
-          <div class="notice notice--ok" id="kontakt-ok" hidden role="status">Zpráva je připravená k&nbsp;odeslání – v&nbsp;pilotní verzi se ještě neodesílá.</div>
-          <button class="btn btn-primary" type="submit">Odeslat zprávu</button>
+          <div class="notice notice--ok" id="kontakt-ok" hidden role="status" tabindex="-1">Zpráva odeslána, ozvu se ti.</div>
+          <button class="btn btn-primary" type="submit" id="kontakt-odeslat">Odeslat zprávu</button>
         </form>
       </div>
     </div>
@@ -212,12 +216,28 @@
 <script src="js/main.js"></script>
 <script src="js/upravy.js"></script>
 <script>
-  /* Pilotní kontaktní formulář – jen validace, nic se neodesílá. */
+  /* Kontaktní formulář – validace a odeslání na POST api/contact.php (JSON).
+     Odpověď: { ok: true } | { ok: false, error } se stavem 400 / 429 / 500 */
   (function () {
     'use strict';
     var form = document.getElementById('kontakt-form');
     if (!form) return;
     var ok = document.getElementById('kontakt-ok');
+    var chyba = document.getElementById('kontakt-chyba');
+    var odeslat = document.getElementById('kontakt-odeslat');
+    var TELEFON = '+420 604 643 157';
+
+    function showError(text) {
+      chyba.textContent = text;
+      chyba.hidden = false;
+      chyba.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      chyba.focus({ preventScroll: true });
+    }
+    function setBusy(busy) {
+      form.setAttribute('aria-busy', busy ? 'true' : 'false');
+      odeslat.disabled = busy;
+      odeslat.textContent = busy ? 'Odesílám…' : 'Odeslat zprávu';
+    }
 
     function setInvalid(el, invalid) {
       var wrap = el.closest('.field');
@@ -247,11 +267,48 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (form.getAttribute('aria-busy') === 'true') return;
       ok.hidden = true;
+      chyba.hidden = true;
       var first = validate();
       if (first) { first.focus(); return; }
-      ok.hidden = false;
-      ok.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+      var payload = {
+        name: form.jmeno.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.telefon.value.trim(),
+        message: form.zprava.value.trim(),
+        gdpr: true,
+        website: form.website ? form.website.value : '' // honeypot – má zůstat prázdné
+      };
+
+      setBusy(true);
+      var status = 0;
+      fetch('api/contact.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) {
+          status = res.status;
+          return res.json().catch(function () { return null; });
+        })
+        .then(function (data) {
+          setBusy(false);
+          if (!data || data.ok === false) {
+            showError(data && data.error ? data.error : 'Server teď neodpovídá (' + status + '). Zkus to prosím za chvíli, nebo mi zavolej na ' + TELEFON + '.');
+            return;
+          }
+          form.reset();
+          ok.hidden = false;
+          ok.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          ok.focus({ preventScroll: true });
+        })
+        .catch(function () {
+          setBusy(false);
+          showError('Nepodařilo se spojit se serverem. Zkontroluj prosím připojení a zkus to znovu, nebo mi zavolej na ' + TELEFON + '.');
+        });
     });
 
     // Chybu schovej, jakmile klientka pole opraví

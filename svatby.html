@@ -24,9 +24,12 @@
     .deposit dl { display: grid; gap: 4px 16px; grid-template-columns: max-content 1fr; margin: 0; font-size: 15px; }
     .deposit dt { color: var(--muted); }
     .deposit dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
-    .qr-placeholder { width: 180px; height: 180px; padding: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; color: var(--muted); border: 1px dashed var(--beige); }
+    .qr-placeholder { width: 180px; min-height: 180px; padding: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; color: var(--muted); border: 1px dashed var(--beige); }
+    .deposit-qr { display: grid; gap: 10px; justify-items: start; }
+    .deposit-qr .btn { white-space: normal; text-align: center; }
     .steps-note { font-size: 14px; color: var(--muted); }
     #poptavka-ok[hidden], .form[hidden] { display: none; }
+    .notice--ok:focus { outline: none; }
   </style>
 </head>
 <body>
@@ -101,7 +104,7 @@
         </div>
         <div class="step">
           <h4>Rezervace zálohou</h4>
-          <p>Termín si držíš zálohou 1&nbsp;000&nbsp;Kč, kterou zaplatíš QR kódem do 3&nbsp;dnů. Jakmile mi přijde na účet, termín ti potvrdím. Bez zálohy se termín po 3&nbsp;dnech uvolní.</p>
+          <p>Termín si držíš zálohou 1&nbsp;000&nbsp;Kč, kterou zaplatíš QR kódem do 3&nbsp;dnů. Jakmile mi přijde na účet, termín ti potvrdím. Když záloha do 3&nbsp;dnů nepřijde, ozvu se ti – do té doby termín držím jen předběžně.</p>
         </div>
         <div class="step">
           <h4>Zkouška líčení a&nbsp;účesu</h4>
@@ -243,7 +246,7 @@
           <details>
             <summary>Co když se svatba zruší nebo přesune?</summary>
             <div class="faq-body">
-              <p>Záloha 1&nbsp;000&nbsp;Kč je po zkoušce nevratná, protože ti držím celý den a&nbsp;odmítám ostatní poptávky. Když se svatba přesune, ozvi se co nejdřív a&nbsp;zkusíme najít nový termín. Pokud záloha nepřijde do 3&nbsp;dnů od rezervace, termín se uvolní pro další nevěsty.</p>
+              <p>Záloha 1&nbsp;000&nbsp;Kč je po zkoušce nevratná, protože ti držím celý den a&nbsp;odmítám ostatní poptávky. Když se svatba přesune, ozvi se co nejdřív a&nbsp;zkusíme najít nový termín. Pokud záloha nepřijde do 3&nbsp;dnů od rezervace, ozvu se ti; bez zálohy termín držím jen předběžně.</p>
             </div>
           </details>
           <details>
@@ -284,10 +287,13 @@
           <p>Nezávazně. Ozvu se ti, jestli mám den volný, a&nbsp;pošlu ti podklady k&nbsp;záloze. Povinná pole jsou označená hvězdičkou.</p>
         </div>
 
-        <p class="pilot-note">Pilotní verze: formulář se zatím nikam neodesílá, po odeslání se jen zobrazí ukázka potvrzení.</p>
-
         <form class="form mt-3" id="form-svatba" novalidate>
-          <div class="notice notice--err" id="form-chyby" hidden></div>
+          <div class="notice notice--err" id="form-chyby" role="alert" tabindex="-1" hidden></div>
+          <!-- Past na roboty: pole je mimo obrazovku, člověk ho nevyplní. Server poptávku s vyplněným polem tiše zahodí. -->
+          <div class="hp" aria-hidden="true">
+            <label for="website">Nevyplňovat</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
 
           <div class="form-row">
             <div class="field">
@@ -365,32 +371,33 @@
           </label>
 
           <div>
-            <button class="btn btn-primary" type="submit">Odeslat poptávku</button>
+            <button class="btn btn-primary" type="submit" id="form-svatba-odeslat">Odeslat poptávku</button>
             <p class="form-note mt-2">Odesláním nic neplatíš. Termín se rezervuje až zálohou.</p>
           </div>
         </form>
 
         <div id="poptavka-ok" hidden>
-          <div class="notice notice--ok">
+          <div class="notice notice--ok" tabindex="-1" id="poptavka-ok-box">
             <h3>Děkuju, poptávku mám</h3>
-            <p class="mt-2">Tvoje poptávka má číslo <strong id="ok-cislo">2026001</strong>. Ozvu se ti, jestli je termín volný. Rekapitulaci ti pošlu i&nbsp;na e&#8209;mail.</p>
+            <p class="mt-2">Tvoje poptávka má číslo <strong id="ok-cislo"></strong>. Ozvu se ti, jestli je termín volný. Rekapitulaci ti pošlu i&nbsp;na e&#8209;mail.</p>
             <dl class="summary mt-3" id="ok-shrnuti"></dl>
           </div>
 
           <div class="card mt-4">
             <p class="eyebrow">Rezervace termínu zálohou</p>
-            <h3 class="mt-1">Termín je tvůj po zaplacení zálohy 1&nbsp;000&nbsp;Kč</h3>
+            <h3 class="mt-1">Termín je tvůj po zaplacení zálohy <span id="ok-castka-nadpis"></span></h3>
             <div class="deposit mt-3">
               <div>
                 <dl>
-                  <dt>Částka</dt><dd>1&nbsp;000&nbsp;Kč</dd>
-                  <dt>Číslo účtu</dt><dd>274884608/0600</dd>
-                  <dt>Variabilní symbol</dt><dd id="ok-vs">2026001</dd>
-                  <dt>Splatnost</dt><dd id="ok-splatnost">do 3&nbsp;dnů</dd>
+                  <dt>Částka</dt><dd id="ok-castka"></dd>
+                  <dt>Číslo účtu</dt><dd id="ok-ucet"></dd>
+                  <dt>Variabilní symbol</dt><dd id="ok-vs"></dd>
+                  <dt>Zpráva pro příjemce</dt><dd id="ok-zprava"></dd>
+                  <dt>Splatnost</dt><dd id="ok-splatnost"></dd>
                 </dl>
-                <p class="muted mt-3" style="font-size:14px">Jakmile záloha přijde na účet, termín ti potvrdím. Když nepřijde do 3&nbsp;dnů, termín uvolním. Záloha je cenou zkoušky líčení a&nbsp;odečítá se z&nbsp;výsledné ceny; po zkoušce je nevratná.</p>
+                <p class="muted mt-3" style="font-size:14px">Jakmile záloha přijde na účet, termín ti potvrdím e&#8209;mailem. Když nepřijde do splatnosti, ozvu se ti. Záloha je cenou zkoušky líčení a&nbsp;odečítá se z&nbsp;výsledné ceny; po zkoušce je nevratná.</p>
               </div>
-              <div class="card card--surface qr-placeholder">QR kód pro platbu vygeneruje systém</div>
+              <div class="deposit-qr" id="ok-qr"><!-- doplní skript: odkaz na QR kód, nebo poznámka --></div>
             </div>
           </div>
         </div>
@@ -450,15 +457,21 @@
 <script src="js/main.js"></script>
 <script src="js/upravy.js"></script>
 <script>
-/* Pilot: svatební poptávka – jen validace a ukázka potvrzení, bez odeslání na server */
+/* Svatební poptávka – validace a odeslání na POST api/wedding.php (JSON).
+   Odpověď: { ok, id, vs, deposit: {amount, account, vs, message, due, qr_url|null}, summary: {date, place, name} }
+   Chyba:   { ok: false, error } se stavem 400 / 409 (ten den už mám svatbu) / 429 / 500 */
 (function () {
   'use strict';
   var form = document.getElementById('form-svatba');
   var ok = document.getElementById('poptavka-ok');
   var errBox = document.getElementById('form-chyby');
+  var odeslat = document.getElementById('form-svatba-odeslat');
   if (!form || !ok) return;
 
-  // Datum svatby nejdřív zítra
+  var NBSP = ' ';
+  var TELEFON = '+420' + NBSP + '604' + NBSP + '643' + NBSP + '157';
+
+  // Datum svatby nejdřív zítra (stejně to hlídá i server)
   var today = new Date();
   var tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
   form.datum.min = isoDate(tomorrow);
@@ -471,12 +484,27 @@
     var p = iso.split('-');
     return p.length === 3 ? parseInt(p[2], 10) + '. ' + parseInt(p[1], 10) + '. ' + p[0] : iso;
   }
+  // 1 000 Kč s nedělitelnými mezerami
+  function czPrice(kc) {
+    return String(kc).replace(/\B(?=(\d{3})+(?!\d))/g, NBSP) + NBSP + 'Kč';
+  }
   function fieldOf(el) {
     return el.closest ? el.closest('.field, .check') : null;
+  }
+  function showError(text) {
+    errBox.hidden = false;
+    errBox.textContent = text;
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function setBusy(busy) {
+    form.setAttribute('aria-busy', busy ? 'true' : 'false');
+    odeslat.disabled = busy;
+    odeslat.textContent = busy ? 'Odesílám…' : 'Odeslat poptávku';
   }
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (form.getAttribute('aria-busy') === 'true') return;
     var errors = [];
     var firstBad = null;
 
@@ -491,36 +519,83 @@
 
     var v = function (name) { return (form[name].value || '').trim(); };
 
-    if (!v('jmeno')) bad(form.jmeno, 'jméno nevěsty');
-    if (!/^\+?[0-9 ]{9,16}$/.test(v('telefon'))) bad(form.telefon, 'telefon');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) bad(form.email, 'e‑mail');
+    if (v('jmeno').length < 3) bad(form.jmeno, 'jméno nevěsty');
+    if (!/^(\+\d{2,3})?\d{9}$/.test(v('telefon').replace(/[\s\-().]/g, ''))) bad(form.telefon, 'telefon');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email'))) bad(form.email, 'e‑mail');
     if (!v('datum') || v('datum') < form.datum.min) bad(form.datum, 'datum svatby');
-    if (!v('misto')) bad(form.misto, 'místo svatby');
+    if (v('misto').length < 2) bad(form.misto, 'místo svatby');
     var zk = form.querySelector('input[name="zkouska"]:checked');
-    if (!zk) bad(form.querySelector('input[name="zkouska"]'), 'zájem o zkoušku');
+    if (!zk) bad(form.querySelector('input[name="zkouska"]'), 'zájem o zkoušku');
     if (!form.gdpr.checked) bad(form.gdpr, 'souhlas se zpracováním údajů');
 
     if (errors.length) {
-      errBox.hidden = false;
-      errBox.textContent = 'Zkontroluj prosím: ' + errors.join(', ') + '.';
-      errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showError('Zkontroluj prosím: ' + errors.join(', ') + '.');
       if (firstBad) firstBad.focus({ preventScroll: true });
       return;
     }
     errBox.hidden = true;
 
-    // Shrnutí poptávky
+    // Data pro API (názvy polí podle api/wedding.php)
+    var payload = {
+      name: v('jmeno'),
+      phone: v('telefon'),
+      email: v('email'),
+      date: v('datum'),
+      place: v('misto'),
+      ceremony_time: v('cas_obradu'),
+      ready_by: v('cas_hotovo'),
+      persons_makeup: v('osob_liceni') ? parseInt(v('osob_liceni'), 10) : 1,
+      persons_hair: v('osob_uces') ? parseInt(v('osob_uces'), 10) : 0,
+      trial: zk.value === 'ano',
+      note: v('poznamka'),
+      gdpr: true,
+      website: v('website') // honeypot – má zůstat prázdné
+    };
+
+    setBusy(true);
+    var status = 0;
+    fetch('api/wedding.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) {
+        status = res.status;
+        return res.json().catch(function () { return null; });
+      })
+      .then(function (data) {
+        if (!data || data.ok === false) {
+          var msg = data && data.error ? data.error : 'Server teď neodpovídá (' + status + '). Zkus to prosím za chvíli, nebo mi zavolej na ' + TELEFON + '.';
+          throw new Error(msg);
+        }
+        zobrazPotvrzeni(data, v, zk.value === 'ano');
+      })
+      .catch(function (err) {
+        setBusy(false);
+        var text = err && err.message ? err.message : '';
+        if (!status) text = 'Nepodařilo se spojit se serverem. Zkontroluj prosím připojení a zkus to znovu, nebo mi zavolej na ' + TELEFON + '.';
+        showError(text);
+        errBox.focus({ preventScroll: true });
+      });
+  });
+
+  function zobrazPotvrzeni(data, v, zkouska) {
+    var deposit = data.deposit || {};
+    var summary = data.summary || {};
+
+    // Shrnutí poptávky (co jsi vyplnila)
     var rows = [
-      ['Nevěsta', v('jmeno')],
+      ['Nevěsta', summary.name || v('jmeno')],
       ['Telefon', v('telefon')],
       ['E‑mail', v('email')],
-      ['Datum svatby', csDate(v('datum'))],
-      ['Místo', v('misto')],
+      ['Datum svatby', summary.date || csDate(v('datum'))],
+      ['Místo', summary.place || v('misto')],
       ['Čas obřadu', v('cas_obradu') || '—'],
       ['Líčení hotové v', v('cas_hotovo') || '—'],
-      ['Osob k líčení', v('osob_liceni') || '—'],
-      ['Osob k účesu', v('osob_uces') || '—'],
-      ['Zkouška líčení', zk.value === 'ano' ? 'ano' : 'ne'],
+      ['Osob k líčení', v('osob_liceni') || '—'],
+      ['Osob k účesu', v('osob_uces') || '—'],
+      ['Zkouška líčení', zkouska ? 'ano' : 'ne'],
       ['Poznámka', v('poznamka') || '—']
     ];
     var dl = document.getElementById('ok-shrnuti');
@@ -531,17 +606,43 @@
       dl.appendChild(dt); dl.appendChild(dd);
     });
 
-    // Ukázkové číslo poptávky = variabilní symbol; splatnost 3 dny
-    var cislo = '2026001';
-    document.getElementById('ok-cislo').textContent = cislo;
-    document.getElementById('ok-vs').textContent = cislo;
-    var due = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3);
-    document.getElementById('ok-splatnost').textContent = 'do ' + csDate(isoDate(due)) + ' (3 dny)';
+    // Údaje k záloze z odpovědi API
+    var vs = deposit.vs || data.vs || '';
+    document.getElementById('ok-cislo').textContent = vs;
+    document.getElementById('ok-vs').textContent = vs;
+    document.getElementById('ok-castka').textContent = deposit.amount != null ? czPrice(deposit.amount) : '—';
+    document.getElementById('ok-castka-nadpis').textContent = deposit.amount != null ? czPrice(deposit.amount) : '';
+    document.getElementById('ok-ucet').textContent = deposit.account || '—';
+    document.getElementById('ok-zprava').textContent = deposit.message || '—';
+    document.getElementById('ok-splatnost').textContent = deposit.due ? 'do ' + deposit.due : '—';
+
+    // QR kód: odkaz na stránku s QR kódem, nebo poznámka, že přijde e-mailem
+    var qr = document.getElementById('ok-qr');
+    qr.innerHTML = '';
+    if (deposit.qr_url) {
+      var a = document.createElement('a');
+      a.className = 'btn btn-primary';
+      a.href = deposit.qr_url;
+      a.textContent = 'Zobrazit QR kód k platbě';
+      var p = document.createElement('p');
+      p.className = 'muted';
+      p.style.fontSize = '13px';
+      p.textContent = 'QR kód naskenuješ v bankovní aplikaci, částka, účet i VS se vyplní samy.';
+      qr.appendChild(a);
+      qr.appendChild(p);
+    } else {
+      var note = document.createElement('div');
+      note.className = 'card card--surface qr-placeholder';
+      note.textContent = 'QR kód k platbě ti pošlu e‑mailem, jakmile bude k dispozici. Zatím můžeš zaplatit převodem podle údajů vedle.';
+      qr.appendChild(note);
+    }
 
     form.hidden = true;
     ok.hidden = false;
-    ok.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+    var box = document.getElementById('poptavka-ok-box');
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    box.focus({ preventScroll: true });
+  }
 })();
 </script>
 </body>

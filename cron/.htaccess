@@ -1,0 +1,8 @@
+# cron/ – zvenku je dostupný jen run.php (ten si sám ověřuje token z config.php).
+# IP adresy záměrně NEomezujeme: plánovač Active24 volá URL z různých serverů
+# a omezení na IP u předchozího projektu rozbilo spouštění.
+Require all denied
+
+<Files "run.php">
+    Require all granted
+</Files>

@@ -217,6 +217,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px
 .form-note { font-size: 13px; color: var(--muted); }
 .notice { padding: 16px 18px; border-radius: var(--r-card); background: var(--surface); font-size: 15px; }
 .notice--ok { background: #eef4ee; }
+.notice--error { background: #f9ecea; color: #7a2f27; }
+/* Past na roboty (honeypot): pole je mimo obrazovku, ne display:none – ten roboti umí přeskočit */
+.hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 
 /* volby (služba / čas) */
 .choice-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }

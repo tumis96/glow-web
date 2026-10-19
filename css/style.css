@@ -197,7 +197,8 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
 @media (min-width: 640px) { .pairs { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1000px) { .pairs { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
 .pair { margin: 0; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
-.pair a { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: var(--line); }
+.pair .pair-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: var(--line); }
+.pair a { display: block; }
 .pair img { width: 100%; height: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center top; display: block; }
 .pair figcaption { display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 8px 0; }
 .pair figcaption span:last-child { color: var(--accent-ink); }

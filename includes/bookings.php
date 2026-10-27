@@ -2,7 +2,8 @@
 /**
  * Operace s rezervacemi – jedno místo pro API, admin i cron.
  * Stavy: pending (čeká na Petru) → confirmed | rejected; cancelled (zákaznice/Petra);
- *        wedding: awaiting_deposit → confirmed (záloha přijata) | rejected.
+ *        wedding: pending → confirmed | rejected (bez zálohy – Petra termín potvrzuje sama; starší poptávky
+ *        mohou být ve stavu awaiting_deposit, chová se stejně jako pending).
  */
 declare(strict_types=1);
 
@@ -109,7 +110,7 @@ function createBooking(array $in): array {
     return ['ok' => true, 'booking' => $b];
 }
 
-/** Svatební poptávka → awaiting_deposit, VS, e-maily. */
+/** Svatební poptávka → pending (čeká na Petru), číslo poptávky, e-maily. */
 function createWedding(array $in): array {
     $name  = mb_substr(trim((string)($in['name'] ?? '')), 0, 120);
     $email = trim((string)($in['email'] ?? ''));
@@ -127,7 +128,7 @@ function createWedding(array $in): array {
     if (!$timeOk($ceremony) || !$timeOk($ready)) return ['ok' => false, 'error' => 'Neplatný čas.', 'code' => 400];
 
     // jedna svatba za den – den D nesmí být držený jinou svatbou
-    $st = db()->prepare("SELECT COUNT(*) FROM bookings WHERE kind = 'wedding' AND status IN ('awaiting_deposit','confirmed') AND DATE(start_at) = ?");
+    $st = db()->prepare("SELECT COUNT(*) FROM bookings WHERE kind = 'wedding' AND status IN ('pending','awaiting_deposit','confirmed') AND DATE(start_at) = ?");
     $st->execute([$date]);
     if ((int)$st->fetchColumn() > 0) return ['ok' => false, 'error' => 'Tento den už mám svatbu. Napište mi prosím, zkusíme najít řešení.', 'code' => 409];
     // ani blokace (dovolená, jiná akce z kalendáře)
@@ -137,7 +138,7 @@ function createWedding(array $in): array {
 
     $pm = min(50, max(0, (int)($in['persons_makeup'] ?? 1))); $ph = min(50, max(0, (int)($in['persons_hair'] ?? 0)));
     $b = [
-        'id' => uuid(), 'kind' => 'wedding', 'status' => 'awaiting_deposit', 'source' => 'web',
+        'id' => uuid(), 'kind' => 'wedding', 'status' => 'pending', 'source' => 'web',
         'start_at' => "$date 00:00:00", 'end_at' => "$date 23:59:00", 'persons' => max(1, $pm),
         'services_json' => json_encode(['svatba'], JSON_UNESCAPED_UNICODE), 'service_label' => 'Svatební líčení' . ($ph > 0 ? ' a účes' : ''),
         'duration_min' => 0, 'price_total' => null, 'price_label' => 'dle ceníku',
@@ -145,7 +146,7 @@ function createWedding(array $in): array {
         'note' => trim((string)($in['note'] ?? '')) ?: null, 'gdpr_at' => now(),
         'wedding_place' => $place, 'ceremony_time' => $ceremony ?: null, 'ready_by' => $ready ?: null,
         'persons_makeup' => $pm, 'persons_hair' => $ph, 'trial_interest' => !empty($in['trial']) ? 1 : 0,
-        'deposit_vs' => nextWeddingVs(),
+        'deposit_vs' => nextWeddingVs(),   // číslo poptávky (ROK + pořadí); sloupec zůstal z dob zálohy
         'cancel_token' => token(), 'decide_token' => token(),
         'created_at' => now(), 'updated_at' => now(),
     ];
@@ -156,7 +157,7 @@ function createWedding(array $in): array {
         logEvent('wedding:create', null, $e->getMessage(), 'error');
         return ['ok' => false, 'error' => 'Poptávku se nepodařilo uložit. Zkuste to prosím znovu.', 'code' => 500];
     }
-    logEvent('wedding:created', $b['id'], 'VS ' . $b['deposit_vs']);
+    logEvent('wedding:created', $b['id'], 'č. ' . $b['deposit_vs']);
     sendWeddingReceived($b);
     sendOwnerNewWedding($b);
     return ['ok' => true, 'booking' => $b];
@@ -169,12 +170,10 @@ function setStatus(array $b, string $status, array $extra = []): array {
     return array_merge($b, $extra);
 }
 
-/** Petra potvrdila (standard) nebo záloha přijata (wedding). */
+/** Petra potvrdila termín (běžná rezervace i svatba). */
 function confirmBooking(array $b): array {
     if (!in_array($b['status'], ['pending', 'awaiting_deposit'], true)) return $b;
-    $extra = ['decided_at' => now()];
-    if ($b['kind'] === 'wedding') $extra['deposit_paid_at'] = now();
-    $b = setStatus($b, 'confirmed', $extra);
+    $b = setStatus($b, 'confirmed', ['decided_at' => now()]);
     $eventId = gcalUpsertBooking($b);
     if ($eventId) { db()->prepare('UPDATE bookings SET gcal_event_id = ? WHERE id = ?')->execute([$eventId, $b['id']]); $b['gcal_event_id'] = $eventId; }
     $b['kind'] === 'wedding' ? sendWeddingConfirmed($b) : sendCustomerConfirmed($b);

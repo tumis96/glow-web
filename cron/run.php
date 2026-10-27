@@ -6,8 +6,8 @@
  *
  * Kroky:
  *  (1) připomínka zákaznicím – potvrzený běžný termín za 23–25 h (reminder_sent=0 → 1)
- *  (2) připomínka Petře – objednávka čeká na potvrzení déle než 24 h (owner_nudged_at)
- *  (3) připomínka Petře – svatební záloha nepřišla do 3 dnů (owner_nudged_at); termín se NEuvolňuje (rozhodnutí klientky)
+ *  (2) připomínka Petře – objednávka nebo svatební poptávka čeká na potvrzení déle než 24 h (owner_nudged_at)
+ *  (3) zrušeno (bývalá připomínka svatební zálohy – svatby se už bez zálohy jen potvrzují)
  *  (4) Google Kalendář → blocked_slots (jen když je kalendář nastavený)
  * Každý krok je oddělený: chyba jednoho neshodí ostatní, všechno se loguje do tabulky log.
  */
@@ -89,25 +89,7 @@ try {
     $line('[2] Připomínka Petře – nepotvrzené: CHYBA – ' . $e->getMessage());
 }
 
-// ---------- (3) Petře: svatební záloha nepřišla do 3 dnů ----------
-try {
-    $cut = date('Y-m-d H:i:s', time() - 3 * 24 * 3600);
-    $st = db()->prepare("SELECT * FROM bookings WHERE status = 'awaiting_deposit' AND owner_nudged_at IS NULL AND created_at < ?");
-    $st->execute([$cut]);
-    $sent = 0; $failed = 0;
-    foreach ($st->fetchAll() as $b) {
-        if (sendOwnerNudge($b, 'Záloha za svatbu nepřišla do 3 dnů')) {
-            db()->prepare('UPDATE bookings SET owner_nudged_at = ?, updated_at = ? WHERE id = ?')->execute([now(), now(), $b['id']]);
-            $sent++;
-        } else {
-            $failed++;
-        }
-    }
-    $line('[3] Připomínka Petře – záloha > 3 dny: odesláno ' . $sent . ($failed ? ', selhalo ' . $failed : ''));
-} catch (Throwable $e) {
-    logEvent('cron:nudge_deposit', null, $e->getMessage(), 'error');
-    $line('[3] Připomínka Petře – záloha: CHYBA – ' . $e->getMessage());
-}
+// (3) dřívější připomínka „záloha nepřišla do 3 dnů“ zrušena – svatby už zálohu nevyžadují, čekající svatby pokrývá bod (2).
 
 // ---------- (4) Google Kalendář → blokace ----------
 try {

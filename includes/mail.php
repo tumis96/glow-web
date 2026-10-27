@@ -161,25 +161,17 @@ function sendCustomerReminder(array $b): bool {
     return sendMail($m, 'customer_reminder', $b['id']);
 }
 
-// ---------- svatby ----------
-function depositHtml(array $b): string {
-    $d = depositInfo($b);
-    $html = '<p>Termín svatby si zarezervujete zálohou <strong>' . czPrice($d['amount']) . '</strong> do <strong>' . czDate($d['due'] . ' 00:00:00') . '</strong>. Záloha je zároveň cenou zkoušky líčení a odečítá se z výsledné ceny.</p>'
-        . emailRows(['Číslo účtu' => $d['account'], 'Částka' => czPrice($d['amount']), 'Variabilní symbol' => $d['vs'], 'Zpráva pro příjemce' => $d['message']]);
-    if ($d['spayd']) $html .= emailButton($d['qr_url'], 'Zobrazit QR kód k platbě', '#90625b');
-    $html .= '<p style="color:#766b6f;font-size:14px;">Jakmile záloha přijde na účet, termín vám potvrdím e-mailem. Pokud záloha do uvedeného data nepřijde, ozvu se vám – termín do té doby držím jen předběžně.</p>';
-    return $html;
-}
-
+// ---------- svatby (bez zálohy – Petra termín potvrzuje sama) ----------
 function sendWeddingReceived(array $b): bool {
     $m = mailer();
     if (($b['customer_email'] ?? '') === NO_EMAIL) return true;   // ruční zápis bez e-mailu – neposílat
     if (!addTo($m, (string)$b['customer_email'], (string)$b['customer_name'])) return false;
     $m->Subject = 'Svatební poptávka přijata – Glow by Petra Jahodová';
-    $body = '<p>Děkuji za poptávku svatebního líčení.</p>' . emailRows(bookingRows($b)) . depositHtml($b);
-    $m->Body    = emailWrap('Svatební poptávka přijata', $body, 'Termín si zarezervujete zálohou 1 000 Kč.');
-    $d = depositInfo($b);
-    $m->AltBody = "Děkuji za poptávku svatebního líčení.\n" . altRows(bookingRows($b)) . "\nZáloha {$d['amount']} Kč na účet {$d['account']}, VS {$d['vs']}, do {$d['due']}.";
+    $body = '<p>Děkuji za poptávku svatebního líčení. Číslo poptávky: <strong>' . h((string)$b['deposit_vs']) . '</strong>.</p>' . emailRows(bookingRows($b))
+        . '<p>Podívám se, jestli mám den volný, a brzy se vám ozvu. Jakmile termín potvrdím, přijde vám e-mail s pozvánkou do kalendáře a domluvíme zkoušku líčení (ideálně 1–3 měsíce před svatbou).</p>'
+        . '<p style="color:#766b6f;font-size:14px;">Pokud jste si to rozmyslela, můžete poptávku zrušit zde: <a href="' . h(cancelUrl($b)) . '" style="color:#90625b;">zrušit poptávku</a>.</p>';
+    $m->Body    = emailWrap('Svatební poptávka přijata', $body, 'Brzy se vám ozvu, jestli mám den volný.');
+    $m->AltBody = "Děkuji za poptávku svatebního líčení (č. {$b['deposit_vs']}).\n" . altRows(bookingRows($b)) . "\nBrzy se vám ozvu, jestli mám den volný.\nZrušit: " . cancelUrl($b);
     return sendMail($m, 'wedding_received', $b['id']);
 }
 
@@ -188,7 +180,7 @@ function sendWeddingConfirmed(array $b): bool {
     if (($b['customer_email'] ?? '') === NO_EMAIL) return true;   // ruční zápis bez e-mailu – neposílat
     if (!addTo($m, (string)$b['customer_email'], (string)$b['customer_name'])) return false;
     $m->Subject = 'Svatební termín potvrzen – ' . czDate($b['start_at']);
-    $body = '<p>Záloha dorazila a váš svatební termín je potvrzený. V příloze máte pozvánku do kalendáře.</p>' . emailRows(bookingRows($b))
+    $body = '<p>Váš svatební termín je potvrzený. V příloze máte pozvánku do kalendáře.</p>' . emailRows(bookingRows($b))
         . '<p>Ozvu se vám kvůli domluvě zkoušky líčení (ideálně 1–3 měsíce před svatbou). Kdykoliv mi napište na info@glowbypetra.cz nebo zavolejte.</p>';
     $m->Body    = emailWrap('Svatební termín potvrzen', $body);
     $m->AltBody = "Váš svatební termín je potvrzený.\n" . altRows(bookingRows($b));
@@ -214,14 +206,12 @@ function sendOwnerNewWedding(array $b): bool {
     $m = mailer();
     if (!addTo($m, (string)cfg('mail_petra'), 'Petra')) return false;
     $m->Subject = 'Svatební poptávka: ' . $b['customer_name'] . ' – ' . czDate($b['start_at']);
-    $d = depositInfo($b);
-    $body = '<p>Přišla svatební poptávka. Zákaznice dostala údaje k záloze (VS <strong>' . h($d['vs']) . '</strong>, ' . czPrice($d['amount']) . ', do ' . czDate($d['due'] . ' 00:00:00') . '). Den D je zatím držený.</p>'
+    $body = '<p>Přišla svatební poptávka č. <strong>' . h((string)$b['deposit_vs']) . '</strong>. Den D je zatím držený jako <strong>čekající</strong> – zálohu web nevyžaduje, případnou platbu si domluv sama.</p>'
         . emailRows(bookingRows($b)) . emailRows(contactRows($b))
-        . '<p>Až záloha přijde na účet, klikni:</p>' . emailButton(decideUrl($b, 'deposit'), 'Záloha přijata – potvrdit termín')
-        . emailButton(decideUrl($b, 'reject'), 'Odmítnout', '#90625b')
+        . '<p>' . emailButton(decideUrl($b, 'confirm'), 'Potvrdit svatební termín') . emailButton(decideUrl($b, 'reject'), 'Odmítnout', '#90625b') . '</p>'
         . '<p style="color:#766b6f;font-size:14px;"><a href="' . h(adminUrl($b)) . '" style="color:#90625b;">Otevřít v administraci</a></p>';
     $m->Body    = emailWrap('Svatební poptávka', $body);
-    $m->AltBody = "Svatební poptávka\n" . altRows(bookingRows($b)) . altRows(contactRows($b)) . "\nVS {$d['vs']}\nZáloha přijata: " . decideUrl($b, 'deposit');
+    $m->AltBody = "Svatební poptávka č. {$b['deposit_vs']}\n" . altRows(bookingRows($b)) . altRows(contactRows($b)) . "\nPotvrdit: " . decideUrl($b, 'confirm') . "\nOdmítnout: " . decideUrl($b, 'reject');
     return sendMail($m, 'owner_new_wedding', $b['id']);
 }
 
@@ -235,16 +225,13 @@ function sendOwnerCancelled(array $b): bool {
     return sendMail($m, 'owner_cancelled', $b['id']);
 }
 
-/** Připomínka Petře: nepotvrzená objednávka (24 h) nebo nezaplacená záloha (3 dny). */
+/** Připomínka Petře: nepotvrzená objednávka nebo svatební poptávka (24 h). */
 function sendOwnerNudge(array $b, string $why): bool {
     $m = mailer();
     if (!addTo($m, (string)cfg('mail_petra'), 'Petra')) return false;
     $m->Subject = 'Připomínka: ' . $why . ' – ' . $b['customer_name'];
-    $isWedding = $b['kind'] === 'wedding';
     $body = '<p>' . h($why) . '. Zákaznice čeká na tvou reakci.</p>' . emailRows(bookingRows($b)) . emailRows(contactRows($b))
-        . ($isWedding
-            ? emailButton(decideUrl($b, 'deposit'), 'Záloha přijata – potvrdit') . emailButton(decideUrl($b, 'reject'), 'Odmítnout / uvolnit termín', '#90625b')
-            : emailButton(decideUrl($b, 'confirm'), 'Potvrdit termín') . emailButton(decideUrl($b, 'reject'), 'Odmítnout', '#90625b'));
+        . emailButton(decideUrl($b, 'confirm'), 'Potvrdit termín') . emailButton(decideUrl($b, 'reject'), 'Odmítnout', '#90625b');
     $m->Body    = emailWrap('Připomínka', $body);
     $m->AltBody = "$why\n" . altRows(bookingRows($b)) . altRows(contactRows($b));
     return sendMail($m, 'owner_nudge', $b['id']);

@@ -1,6 +1,6 @@
 <?php
 /**
- * Administrace – přehled rezervací a akce (potvrdit, záloha přijata, odmítnout, zrušit).
+ * Administrace – přehled rezervací a akce (potvrdit, odmítnout, zrušit). Svatby se potvrzují stejně jako běžné rezervace (bez zálohy).
  * Filtry ?f=cekajici|nadchazejici|probehle|zrusene|svatby|vse, hledání ?q=, zvýraznění ?id= (odkaz z e-mailu).
  * Veškerá logika stavů je v includes/bookings.php – tady se jen volá.
  */
@@ -34,12 +34,9 @@ if (isPost()) {
     $hasEmail = $b['customer_email'] !== ADMIN_NO_EMAIL;
     switch ($action) {
         case 'confirm':
-            if ($b['status'] === 'pending') { confirmBooking($b); flash('ok', "Potvrzeno. $name dostala e‑mail s pozvánkou do kalendáře."); }
+        case 'deposit':   // starší formulář/odkaz
+            if (in_array($b['status'], ['pending', 'awaiting_deposit'], true)) { confirmBooking($b); flash('ok', "Potvrzeno. $name dostala e‑mail s pozvánkou do kalendáře."); }
             else flash('warn', 'Tuhle rezervaci už nejde potvrdit – má jiný stav.');
-            break;
-        case 'deposit':
-            if ($b['status'] === 'awaiting_deposit') { confirmBooking($b); flash('ok', "Záloha zapsaná, svatební termín je potvrzený. $name dostala e‑mail."); }
-            else flash('warn', 'Tuhle poptávku už nejde potvrdit – má jiný stav.');
             break;
         case 'reject':
             if (in_array($b['status'], ['pending', 'awaiting_deposit'], true)) { rejectBooking($b, trim((string)($_POST['reason'] ?? ''))); flash('ok', "Odmítnuto. $name dostala e‑mail, termín je zase volný."); }
@@ -68,8 +65,8 @@ $monday   = date('Y-m-d', strtotime('-' . ((int)date('N') - 1) . ' days'));
 $nextMon  = date('Y-m-d', strtotime($monday . ' +7 days'));
 $holding  = "status IN ('pending','confirmed','awaiting_deposit')";
 $stats = [
-    'pending'  => countWhere("status = 'pending'", []),
-    'deposit'  => countWhere("status = 'awaiting_deposit'", []),
+    'pending'  => countWhere("status IN ('pending','awaiting_deposit')", []),
+    'weddings' => countWhere("kind = 'wedding' AND $holding AND start_at >= ?", ["$today 00:00:00"]),
     'today'    => countWhere("$holding AND start_at >= ? AND start_at < ?", ["$today 00:00:00", "$tomorrow 00:00:00"]),
     'week'     => countWhere("$holding AND start_at >= ? AND start_at < ?", ["$monday 00:00:00", "$nextMon 00:00:00"]),
 ];
@@ -102,7 +99,7 @@ if ($highlight) $list = array_values(array_filter($list, fn($b) => $b['id'] !== 
 function statusBadge(array $b): string {
     $map = [
         'pending'          => ['Čeká na potvrzení', 'badge--wait'],
-        'awaiting_deposit' => ['Čeká na zálohu',    'badge--wait'],
+        'awaiting_deposit' => ['Čeká na potvrzení', 'badge--wait'],   // starší svatební poptávky z dob zálohy
         'confirmed'        => ['Potvrzeno',         'badge--ok'],
         'rejected'         => ['Odmítnuto',         'badge--off'],
         'cancelled'        => ['Zrušeno',           'badge--off'],
@@ -143,11 +140,9 @@ function bookingCard(array $b, bool $hl, string $f, string $q): void {
             <dt>Časy</dt><dd><?= !empty($b['ceremony_time']) ? 'obřad ' . h(substr((string)$b['ceremony_time'], 0, 5)) : '' ?><?= !empty($b['ceremony_time']) && !empty($b['ready_by']) ? ' · ' : '' ?><?= !empty($b['ready_by']) ? 'hotovo do ' . h(substr((string)$b['ready_by'], 0, 5)) : '' ?></dd>
           <?php endif; ?>
           <dt>Zkouška</dt><dd><?= (int)($b['trial_interest'] ?? 0) ? 'má zájem' : 'bez zájmu' ?></dd>
-          <?php if (!empty($b['deposit_vs'])): $d = depositInfo($b); ?>
-            <dt>Záloha</dt>
-            <dd><?= h(czPrice($d['amount'])) ?>, VS&nbsp;<strong><?= h($d['vs']) ?></strong><?php
-              if (!empty($b['deposit_paid_at'])): ?> · přijata <?= h(czShortDate($b['deposit_paid_at'])) ?><?php
-              elseif ($b['status'] === 'awaiting_deposit'): ?> · splatná do <strong><?= h(czShortDate($d['due'] . ' 00:00:00')) ?></strong><?php endif; ?></dd>
+          <?php if (!empty($b['deposit_vs'])): ?>
+            <dt>Poptávka č.</dt>
+            <dd><strong><?= h((string)$b['deposit_vs']) ?></strong><?php if (!empty($b['deposit_paid_at'])): ?> · záloha přijata <?= h(czShortDate($b['deposit_paid_at'])) ?><?php endif; ?></dd>
           <?php endif; ?>
         <?php else: ?>
           <dt>Služba</dt><dd><?= h($b['service_label']) ?></dd>
@@ -161,15 +156,15 @@ function bookingCard(array $b, bool $hl, string $f, string $q): void {
 
       <?php if ($b['status'] === 'pending' || $b['status'] === 'awaiting_deposit'): ?>
         <div class="bk-actions">
-          <form method="post"><?= $hidden ?><input type="hidden" name="action" value="<?= $b['status'] === 'pending' ? 'confirm' : 'deposit' ?>">
-            <button class="btn btn-ok btn-sm" type="submit"><?= $b['status'] === 'pending' ? 'Potvrdit' : 'Záloha přijata' ?></button></form>
+          <form method="post"><?= $hidden ?><input type="hidden" name="action" value="confirm">
+            <button class="btn btn-ok btn-sm" type="submit">Potvrdit</button></form>
           <details class="more">
             <summary class="btn btn-danger btn-sm">Odmítnout</summary>
             <form method="post" class="more-panel"><?= $hidden ?><input type="hidden" name="action" value="reject">
               <div class="field">
                 <label for="reason-<?= h($b['id']) ?>">Vzkaz pro zákaznici (nepovinné)</label>
                 <textarea id="reason-<?= h($b['id']) ?>" name="reason" maxlength="1000" placeholder="Např. v tenhle čas už nemůžu, zkuste od 16:00…"></textarea>
-                <span class="hint">Pošle se jí e‑mailem spolu s&nbsp;odkazem na výběr jiného termínu.<?= $b['status'] === 'awaiting_deposit' ? ' Den svatby se uvolní.' : '' ?></span>
+                <span class="hint">Pošle se jí e‑mailem spolu s&nbsp;odkazem na výběr jiného termínu.<?= $isWedding ? ' Den svatby se uvolní.' : '' ?></span>
               </div>
               <button class="btn btn-danger btn-sm" type="submit">Odmítnout a&nbsp;odeslat e‑mail</button>
             </form>
@@ -208,7 +203,7 @@ adminPage('Rezervace', function () use ($f, $q, $stats, $list, $highlight, $pend
     <p class="eyebrow<?= $pendingReviews ? ' mt-3' : '' ?>">Tvoje rezervace</p>
     <div class="stats mt-2">
       <a class="stat<?= $stats['pending'] ? ' is-hot' : '' ?>" href="index.php?f=cekajici"><b><?= $stats['pending'] ?></b><span>čeká na potvrzení</span></a>
-      <a class="stat<?= $stats['deposit'] ? ' is-hot' : '' ?>" href="index.php?f=svatby"><b><?= $stats['deposit'] ?></b><span>čeká na zálohu</span></a>
+      <a class="stat" href="index.php?f=svatby"><b><?= $stats['weddings'] ?></b><span>svatby dopředu</span></a>
       <a class="stat" href="index.php?f=nadchazejici"><b><?= $stats['today'] ?></b><span>dnes</span></a>
       <a class="stat" href="index.php?f=nadchazejici"><b><?= $stats['week'] ?></b><span>tento týden</span></a>
     </div>

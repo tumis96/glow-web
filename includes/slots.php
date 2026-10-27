@@ -105,7 +105,7 @@ function weddingDaysInMonth(int $year, int $month): array {
     $first = sprintf('%04d-%02d-01', $year, $month);
     $last  = sprintf('%04d-%02d-%02d', $year, $month, $days);
     $taken = [];
-    $st = db()->prepare("SELECT DATE(start_at) AS d FROM bookings WHERE kind = 'wedding' AND status IN ('awaiting_deposit','confirmed') AND start_at >= ? AND start_at <= ?");
+    $st = db()->prepare("SELECT DATE(start_at) AS d FROM bookings WHERE kind = 'wedding' AND status IN ('pending','awaiting_deposit','confirmed') AND start_at >= ? AND start_at <= ?");
     $st->execute(["$first 00:00:00", "$last 23:59:59"]);
     foreach ($st as $r) $taken[$r['d']] = true;
     $st = db()->prepare('SELECT start_at, end_at FROM blocked_slots WHERE start_at <= ? AND end_at >= ?');

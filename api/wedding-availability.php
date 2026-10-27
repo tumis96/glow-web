@@ -2,7 +2,7 @@
 /**
  * GET /api/wedding-availability.php?month=2027-06
  * → { ok: true, month, days: { 'YYYY-MM-DD': 'free'|'taken'|'past' }, minDate, maxDate }
- * Kalendář svatebních termínů na stránce Svatby. „taken“ = ten den už je svatba (čeká na zálohu / potvrzená) nebo blokace.
+ * Kalendář svatebních termínů na stránce Svatby. „taken“ = ten den už je svatba (čeká na potvrzení / potvrzená) nebo blokace.
  */
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';

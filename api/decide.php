@@ -1,7 +1,7 @@
 <?php
 /**
- * GET/POST /api/decide.php?id=…&token=…&action=confirm|reject|deposit – rozhodnutí Petry z e-mailu (bez přihlášení).
- * confirm = potvrdit běžnou rezervaci, deposit = záloha přijata (svatba), reject = odmítnout (s důvodem).
+ * GET/POST /api/decide.php?id=…&token=…&action=confirm|reject – rozhodnutí Petry z e-mailu (bez přihlášení).
+ * confirm = potvrdit termín (rezervace i svatba), reject = odmítnout (s důvodem). „deposit“ ze starších e-mailů = confirm.
  */
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -23,15 +23,14 @@ if (!in_array($b['status'], ['pending', 'awaiting_deposit'], true)) {
     renderPage('Rezervace ' . ($map[$b['status']] ?? $b['status']), '<p class="lead">Není co měnit.</p>' . $rows . $adminLink, 'Administrace');
 }
 
-if ($action === 'confirm' || $action === 'deposit') {
-    if ($action === 'deposit' && $b['kind'] !== 'wedding') renderPage('Neplatná akce', '<p class="lead">Tohle není svatební poptávka.</p>', 'Administrace');
-    if ($action === 'confirm' && $b['kind'] === 'wedding') $action = 'deposit';
+if ($action === 'deposit') $action = 'confirm';   // odkaz ze starších e-mailů
+if ($action === 'confirm') {
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         confirmBooking($b);
         renderPage('Potvrzeno', '<p class="lead">Zákaznici odešel e-mail s potvrzením a pozvánkou do kalendáře' . (gcalEnabled() ? ', termín je v Google Kalendáři' : '') . '.</p>' . $rows . $adminLink, 'Administrace');
     }
-    $q = $action === 'deposit' ? 'Záloha přišla na účet a termín potvrzuješ?' : 'Potvrdit tenhle termín?';
-    renderPage($q, $rows . '<form method="post"><input type="hidden" name="id" value="' . h($b['id']) . '"><input type="hidden" name="token" value="' . h($token) . '"><input type="hidden" name="action" value="' . h($action) . '">'
+    $q = $b['kind'] === 'wedding' ? 'Potvrdit tenhle svatební termín?' : 'Potvrdit tenhle termín?';
+    renderPage($q, $rows . '<form method="post"><input type="hidden" name="id" value="' . h($b['id']) . '"><input type="hidden" name="token" value="' . h($token) . '"><input type="hidden" name="action" value="confirm">'
         . '<div class="hero-actions hero-actions--start"><button class="btn btn-primary" type="submit">Ano, potvrdit</button><a class="btn btn-outline" href="' . h(decideUrl($b, 'reject')) . '">Raději odmítnout</a></div></form>', 'Administrace');
 }
 
@@ -42,6 +41,6 @@ if ($action === 'reject') {
     }
     renderPage('Odmítnout rezervaci', $rows . '<form method="post" class="form"><input type="hidden" name="id" value="' . h($b['id']) . '"><input type="hidden" name="token" value="' . h($token) . '"><input type="hidden" name="action" value="reject">'
         . '<div class="field"><label for="reason">Vzkaz pro zákaznici (nepovinné)</label><textarea id="reason" name="reason" placeholder="Např. v tenhle čas už nemůžu, zkuste od 16:00…"></textarea><span class="hint">Pošle se jí v e-mailu spolu s odkazem na nový výběr termínu.</span></div>'
-        . '<div class="hero-actions hero-actions--start"><button class="btn btn-primary" type="submit">Odmítnout a odeslat</button><a class="btn btn-outline" href="' . h(decideUrl($b, $b['kind'] === 'wedding' ? 'deposit' : 'confirm')) . '">Zpět na potvrzení</a></div></form>', 'Administrace');
+        . '<div class="hero-actions hero-actions--start"><button class="btn btn-primary" type="submit">Odmítnout a odeslat</button><a class="btn btn-outline" href="' . h(decideUrl($b, 'confirm')) . '">Zpět na potvrzení</a></div></form>', 'Administrace');
 }
 renderPage('Neznámá akce', '<p class="lead">Odkaz je neúplný.</p>' . $adminLink, 'Administrace');

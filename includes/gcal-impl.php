@@ -290,7 +290,7 @@ function gcalEventBody(array $b): array {
         if (!empty($b['ceremony_time'])) $lines[] = 'Obřad: ' . substr((string)$b['ceremony_time'], 0, 5);
         if (!empty($b['ready_by']))      $lines[] = 'Hotovo do: ' . substr((string)$b['ready_by'], 0, 5);
         $lines[] = 'Líčení / účes: ' . (int)($b['persons_makeup'] ?? 0) . ' / ' . (int)($b['persons_hair'] ?? 0) . ' osob';
-        if (!empty($b['deposit_vs']))    $lines[] = 'VS zálohy: ' . (string)$b['deposit_vs'];
+        if (!empty($b['deposit_vs']))    $lines[] = 'Poptávka č. ' . (string)$b['deposit_vs'];
     } else {
         $lines[] = 'Služba: ' . (string)($b['service_label'] ?? '');
         $lines[] = 'Osob: ' . (int)($b['persons'] ?? 1);

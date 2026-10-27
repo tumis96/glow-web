@@ -34,7 +34,7 @@ function addItem(array &$byDay, string $date, int $sort, array $item): void { $b
 function fmtPhoneCal(string $p): string {
     return preg_match('/^\+420(\d{3})(\d{3})(\d{3})$/', $p, $x) ? "+420 $x[1] $x[2] $x[3]" : $p;
 }
-$statusLabel = ['pending' => 'Čeká na potvrzení', 'awaiting_deposit' => 'Čeká na zálohu', 'confirmed' => 'Potvrzeno'];
+$statusLabel = ['pending' => 'Čeká na potvrzení', 'awaiting_deposit' => 'Čeká na potvrzení', 'confirmed' => 'Potvrzeno'];
 
 /** Barva v kalendáři: wed = svatba, ples = plesové/festivalové líčení a plesový balíček, lic = ostatní líčení, účesy, focení, zkoušky, kurz. */
 const PLES_SERVICES = ['plesove', 'festivalove', 'balicek-ples'];
@@ -59,10 +59,7 @@ foreach ($bookings as $b) {
         if (!empty($b['ready_by'])) $times[] = 'hotovo do ' . substr((string)$b['ready_by'], 0, 5);
         if ($times) $rows[] = ['Časy', implode(' · ', $times)];
         $rows[] = ['Zkouška', (int)($b['trial_interest'] ?? 0) ? 'má zájem' : 'bez zájmu'];
-        if (!empty($b['deposit_vs'])) {
-            $d = depositInfo($b);
-            $rows[] = ['Záloha', czPrice($d['amount']) . ', VS ' . $d['vs'] . (!empty($b['deposit_paid_at']) ? ' · přijata ' . date('j. n. Y', strtotime($b['deposit_paid_at'])) : ($b['status'] === 'awaiting_deposit' ? ' · splatná do ' . date('j. n. Y', strtotime($d['due'])) : ''))];
-        }
+        if (!empty($b['deposit_vs'])) $rows[] = ['Poptávka č.', (string)$b['deposit_vs'] . (!empty($b['deposit_paid_at']) ? ' · záloha přijata ' . date('j. n. Y', strtotime($b['deposit_paid_at'])) : '')];
     } else {
         $rows[] = ['Termín', czDate($b['start_at']) . ' ' . czTime($b['start_at']) . '–' . czTime($b['end_at'])];
         $rows[] = ['Služba', $b['service_label']];
@@ -174,7 +171,7 @@ adminPage('Kalendář', function () use ($m, $prev, $next, $title, $year, $month
       <span><i style="background:#f4e4f0;border:1px solid #d39cc4"></i>Svatba (<?= $counts['wed'] ?> tento měsíc)</span>
       <span><i style="background:#e4ecf8;border:1px solid #9db5dd"></i>Ples (<?= $counts['ples'] ?>)</span>
       <span><i style="background:#e6f2e7;border:1px solid #9fc8a6"></i>Líčení, účes, focení, zkouška, kurz (<?= $counts['lic'] ?>)</span>
-      <span><i class="is-wait"></i>Čárkovaně s otazníkem = čeká na potvrzení / zálohu (<?= $counts['wait'] ?>)</span>
+      <span><i class="is-wait"></i>Čárkovaně s otazníkem = čeká na potvrzení (<?= $counts['wait'] ?>)</span>
       <span><i style="background:#eee9e8;border:1px solid #ddd5d3"></i>Blokace (<?= $counts['block'] ?>)</span>
     </div>
 

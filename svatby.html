@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/style.css?v=202610271930">
   <style>
-    /* jen pro tuto stránku: chyby ve formuláři, shrnutí poptávky, zálohový blok */
+    /* jen pro tuto stránku: chyby ve formuláři, shrnutí poptávky */
     .field.is-invalid input, .field.is-invalid textarea { border-color: #b04a3f; }
     .field .error { display: none; font-size: 13px; color: #b04a3f; }
     .field.is-invalid .error { display: block; }
@@ -19,14 +19,6 @@
     .summary { display: grid; gap: 6px 16px; grid-template-columns: max-content 1fr; margin: 0; font-size: 15px; }
     .summary dt { color: var(--muted); }
     .summary dd { margin: 0; font-weight: 500; }
-    .deposit { display: grid; gap: 24px; align-items: start; }
-    @media (min-width: 640px) { .deposit { grid-template-columns: 1fr 180px; } }
-    .deposit dl { display: grid; gap: 4px 16px; grid-template-columns: max-content 1fr; margin: 0; font-size: 15px; }
-    .deposit dt { color: var(--muted); }
-    .deposit dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
-    .qr-placeholder { width: 180px; min-height: 180px; padding: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; color: var(--muted); border: 1px dashed var(--beige); }
-    .deposit-qr { display: grid; gap: 10px; justify-items: start; }
-    .deposit-qr .btn { white-space: normal; text-align: center; }
     .steps-note { font-size: 14px; color: var(--muted); }
     #poptavka-ok[hidden], .form[hidden] { display: none; }
     .notice--ok:focus { outline: none; }
@@ -95,7 +87,7 @@
       <div class="section-head section-head--center">
         <p class="eyebrow">Jak to probíhá</p>
         <h2>Od poptávky ke svatebnímu ránu</h2>
-        <p>Čtyři kroky, nic složitého. Termín je tvůj, jakmile přijde záloha.</p>
+        <p>Čtyři kroky, nic složitého. Termín je tvůj, jakmile ti ho potvrdím.</p>
       </div>
       <div class="steps">
         <div class="step">
@@ -103,12 +95,12 @@
           <p>Vyplň <a class="link" href="#poptavka">formulář níže</a>: datum, místo, počet osob a&nbsp;čas, kdy má být líčení hotové. Ozvu se ti, jestli mám termín volný.</p>
         </div>
         <div class="step">
-          <h4>Rezervace zálohou</h4>
-          <p>Termín si držíš zálohou 1&nbsp;000&nbsp;Kč, kterou zaplatíš QR kódem do 3&nbsp;dnů. Jakmile mi přijde na účet, termín ti potvrdím. Když záloha do 3&nbsp;dnů nepřijde, ozvu se ti – do té doby termín držím jen předběžně.</p>
+          <h4>Potvrzení termínu</h4>
+          <p>Podívám se do kalendáře a&nbsp;ozvu se ti. Jakmile termín potvrdím, přijde ti e&#8209;mail s&nbsp;pozvánkou do kalendáře a&nbsp;den je tvůj. Žádnou zálohu předem neplatíš.</p>
         </div>
         <div class="step">
           <h4>Zkouška líčení a&nbsp;účesu</h4>
-          <p>V&nbsp;salonu v&nbsp;Lichnově, ideálně 1–3 měsíce před svatbou. Záloha je zároveň cenou zkoušky a&nbsp;odečítá se z&nbsp;celkové ceny. Po zkoušce je nevratná.</p>
+          <p>V&nbsp;salonu v&nbsp;Lichnově, ideálně 1–3 měsíce před svatbou. Zkoušku (1&nbsp;000&nbsp;Kč) zaplatíš na místě.</p>
         </div>
         <div class="step">
           <h4>Svatební den</h4>
@@ -124,7 +116,7 @@
       <div class="section-head section-head--center">
         <p class="eyebrow">Svatební ceník</p>
         <h2>Ceny jsou konečné, <em>bez překvapení</em></h2>
-        <p>Nejsem plátce DPH, žádné příplatky za víkend ani brzké ráno. Záloha na termín je 1&nbsp;000&nbsp;Kč a&nbsp;odečítá se z&nbsp;výsledné ceny.</p>
+        <p>Nejsem plátce DPH, žádné příplatky za víkend ani brzké ráno. Na termín neplatíš žádnou zálohu.</p>
       </div>
 
       <div class="narrow">
@@ -134,7 +126,7 @@
             <h4>Zkouška svatebního líčení</h4>
             <span class="price">1&nbsp;000&nbsp;Kč</span>
             <span class="dur">75&nbsp;min</span>
-            <p>Konzultace představy, termínu, místa a&nbsp;počtu osob, příprava pleti a&nbsp;výběr make&#8209;upu. Cena zkoušky je zároveň zálohou na svatební termín.</p>
+            <p>Konzultace představy, termínu, místa a&nbsp;počtu osob, příprava pleti a&nbsp;výběr make&#8209;upu. Platí se na místě po zkoušce.</p>
           </div>
           <div class="price-item">
             <h4>Svatební líčení den D</h4>
@@ -201,7 +193,7 @@
         </div>
 
         <div class="notice mt-4">
-          <strong>Záloha na svatební termín</strong> je 1&nbsp;000&nbsp;Kč, tedy cena zkoušky líčení. Platí se do 3&nbsp;dnů od rezervace, po zkoušce je nevratná a&nbsp;odečítá se z&nbsp;výsledné ceny.
+          <strong>Bez zálohy.</strong> Svatební termín ti potvrdím e&#8209;mailem a&nbsp;nic předem neplatíš. Zkoušku zaplatíš na místě, svatební líčení ve svatební den.
         </div>
       </div>
     </div>
@@ -246,7 +238,7 @@
           <details>
             <summary>Co když se svatba zruší nebo přesune?</summary>
             <div class="faq-body">
-              <p>Záloha 1&nbsp;000&nbsp;Kč je po zkoušce nevratná, protože ti držím celý den a&nbsp;odmítám ostatní poptávky. Když se svatba přesune, ozvi se co nejdřív a&nbsp;zkusíme najít nový termín. Pokud záloha nepřijde do 3&nbsp;dnů od rezervace, ozvu se ti; bez zálohy termín držím jen předběžně.</p>
+              <p>Ozvi se mi prosím co nejdřív, protože ti držím celý den a&nbsp;odmítám ostatní poptávky. Když se svatba přesune, zkusíme najít nový termín. Když se zruší, nic neplatíš; jen zkouška líčení, pokud už proběhla, zůstává zaplacená jako běžná služba.</p>
             </div>
           </details>
           <details>
@@ -270,7 +262,7 @@
           <details>
             <summary>Jak se platí zbytek ceny?</summary>
             <div class="faq-body">
-              <p>Zálohu zaplatíš QR kódem po rezervaci. Zbytek ceny po odečtení zálohy doplatíš ve svatební den hotově, nebo QR kódem z&nbsp;mobilu.</p>
+              <p>Žádnou zálohu předem neplatíš. Zkoušku zaplatíš na místě po zkoušce a&nbsp;svatební líčení ve svatební den hotově, nebo QR kódem z&nbsp;mobilu.</p>
             </div>
           </details>
         </div>
@@ -284,7 +276,7 @@
         <div class="section-head">
           <p class="eyebrow">Poptávka</p>
           <h2>Poptat svatební termín</h2>
-          <p>Nezávazně. Ozvu se ti, jestli mám den volný, a&nbsp;pošlu ti podklady k&nbsp;záloze. Povinná pole jsou označená hvězdičkou.</p>
+          <p>Nezávazně. Ozvu se ti, jestli mám den volný, a&nbsp;termín ti potvrdím e&#8209;mailem. Povinná pole jsou označená hvězdičkou.</p>
         </div>
 
         <form class="form mt-3" id="form-svatba" novalidate>
@@ -371,8 +363,8 @@
           <fieldset class="field" style="border:0;padding:0;margin:0;min-width:0">
             <legend style="font-size:14px;font-weight:600;padding:0">Zájem o&nbsp;zkoušku líčení *</legend>
             <div class="choice-grid choice-grid--2">
-              <label class="choice"><input type="radio" name="zkouska" value="ano"><b>Ano, chci zkoušku</b><small>1&nbsp;000&nbsp;Kč, zároveň záloha na termín</small></label>
-              <label class="choice"><input type="radio" name="zkouska" value="ne"><b>Ne, bez zkoušky</b><small>Záloha 1&nbsp;000&nbsp;Kč se odečte z&nbsp;ceny</small></label>
+              <label class="choice"><input type="radio" name="zkouska" value="ano"><b>Ano, chci zkoušku</b><small>1&nbsp;000&nbsp;Kč, v&nbsp;salonu v&nbsp;Lichnově</small></label>
+              <label class="choice"><input type="radio" name="zkouska" value="ne"><b>Ne, bez zkoušky</b><small>Uvidíme se až ve svatební den</small></label>
             </div>
             <span class="error">Vyber prosím, jestli chceš zkoušku líčení.</span>
           </fieldset>
@@ -389,33 +381,15 @@
 
           <div>
             <button class="btn btn-primary" type="submit" id="form-svatba-odeslat">Odeslat poptávku</button>
-            <p class="form-note mt-2">Odesláním nic neplatíš. Termín se rezervuje až zálohou.</p>
+            <p class="form-note mt-2">Odesláním nic neplatíš a&nbsp;k&nbsp;ničemu se nezavazuješ. Termín ti potvrdím e&#8209;mailem.</p>
           </div>
         </form>
 
         <div id="poptavka-ok" hidden>
           <div class="notice notice--ok" tabindex="-1" id="poptavka-ok-box">
             <h3>Děkuju, poptávku mám</h3>
-            <p class="mt-2">Tvoje poptávka má číslo <strong id="ok-cislo"></strong>. Ozvu se ti, jestli je termín volný. Rekapitulaci ti pošlu i&nbsp;na e&#8209;mail.</p>
+            <p class="mt-2">Tvoje poptávka má číslo <strong id="ok-cislo"></strong>. Podívám se do kalendáře a&nbsp;ozvu se ti, jestli je termín volný. Jakmile ho potvrdím, přijde ti e&#8209;mail s&nbsp;pozvánkou do kalendáře. Rekapitulaci ti pošlu i&nbsp;na e&#8209;mail.</p>
             <dl class="summary mt-3" id="ok-shrnuti"></dl>
-          </div>
-
-          <div class="card mt-4">
-            <p class="eyebrow">Rezervace termínu zálohou</p>
-            <h3 class="mt-1">Termín je tvůj po zaplacení zálohy <span id="ok-castka-nadpis"></span></h3>
-            <div class="deposit mt-3">
-              <div>
-                <dl>
-                  <dt>Částka</dt><dd id="ok-castka"></dd>
-                  <dt>Číslo účtu</dt><dd id="ok-ucet"></dd>
-                  <dt>Variabilní symbol</dt><dd id="ok-vs"></dd>
-                  <dt>Zpráva pro příjemce</dt><dd id="ok-zprava"></dd>
-                  <dt>Splatnost</dt><dd id="ok-splatnost"></dd>
-                </dl>
-                <p class="muted mt-3" style="font-size:14px">Jakmile záloha přijde na účet, termín ti potvrdím e&#8209;mailem. Když nepřijde do splatnosti, ozvu se ti. Záloha je cenou zkoušky líčení a&nbsp;odečítá se z&nbsp;výsledné ceny; po zkoušce je nevratná.</p>
-              </div>
-              <div class="deposit-qr" id="ok-qr"><!-- doplní skript: odkaz na QR kód, nebo poznámka --></div>
-            </div>
           </div>
         </div>
       </div>
@@ -475,7 +449,7 @@
 <script src="js/upravy.js?v=202610271930"></script>
 <script>
 /* Svatební poptávka – validace a odeslání na POST api/wedding.php (JSON).
-   Odpověď: { ok, id, vs, deposit: {amount, account, vs, message, due, qr_url|null}, summary: {date, place, name} }
+   Odpověď: { ok, id, number (číslo poptávky), summary: {date, place, name} } – bez zálohy, termín potvrzuje Petra e-mailem
    Chyba:   { ok: false, error } se stavem 400 / 409 (ten den už mám svatbu) / 429 / 500 */
 (function () {
   'use strict';
@@ -500,10 +474,6 @@
   function csDate(iso) {
     var p = iso.split('-');
     return p.length === 3 ? parseInt(p[2], 10) + '. ' + parseInt(p[1], 10) + '. ' + p[0] : iso;
-  }
-  // 1 000 Kč s nedělitelnými mezerami
-  function czPrice(kc) {
-    return String(kc).replace(/\B(?=(\d{3})+(?!\d))/g, NBSP) + NBSP + 'Kč';
   }
   function fieldOf(el) {
     return el.closest ? el.closest('.field, .check') : null;
@@ -691,7 +661,6 @@
   });
 
   function zobrazPotvrzeni(data, v, zkouska) {
-    var deposit = data.deposit || {};
     var summary = data.summary || {};
 
     // Shrnutí poptávky (co jsi vyplnila)
@@ -716,36 +685,8 @@
       dl.appendChild(dt); dl.appendChild(dd);
     });
 
-    // Údaje k záloze z odpovědi API
-    var vs = deposit.vs || data.vs || '';
-    document.getElementById('ok-cislo').textContent = vs;
-    document.getElementById('ok-vs').textContent = vs;
-    document.getElementById('ok-castka').textContent = deposit.amount != null ? czPrice(deposit.amount) : '—';
-    document.getElementById('ok-castka-nadpis').textContent = deposit.amount != null ? czPrice(deposit.amount) : '';
-    document.getElementById('ok-ucet').textContent = deposit.account || '—';
-    document.getElementById('ok-zprava').textContent = deposit.message || '—';
-    document.getElementById('ok-splatnost').textContent = deposit.due ? 'do ' + deposit.due : '—';
-
-    // QR kód: odkaz na stránku s QR kódem, nebo poznámka, že přijde e-mailem
-    var qr = document.getElementById('ok-qr');
-    qr.innerHTML = '';
-    if (deposit.qr_url) {
-      var a = document.createElement('a');
-      a.className = 'btn btn-primary';
-      a.href = deposit.qr_url;
-      a.textContent = 'Zobrazit QR kód k platbě';
-      var p = document.createElement('p');
-      p.className = 'muted';
-      p.style.fontSize = '13px';
-      p.textContent = 'QR kód naskenuješ v bankovní aplikaci, částka, účet i VS se vyplní samy.';
-      qr.appendChild(a);
-      qr.appendChild(p);
-    } else {
-      var note = document.createElement('div');
-      note.className = 'card card--surface qr-placeholder';
-      note.textContent = 'QR kód k platbě ti pošlu e‑mailem, jakmile bude k dispozici. Zatím můžeš zaplatit převodem podle údajů vedle.';
-      qr.appendChild(note);
-    }
+    // Číslo poptávky z odpovědi API
+    document.getElementById('ok-cislo').textContent = data.number || data.vs || '';
 
     form.hidden = true;
     ok.hidden = false;

@@ -76,26 +76,52 @@
   if (links.length && 'HTMLDialogElement' in window) {
     var dlg = document.createElement('dialog');
     dlg.className = 'lightbox';
-    dlg.innerHTML = '<button class="lightbox-close" type="button" aria-label="Zavřít">×</button><img alt=""><div class="lightbox-caption"></div>';
+    dlg.innerHTML = '<button class="lightbox-close" type="button" aria-label="Zavřít">×</button>'
+      + '<button class="lightbox-nav lightbox-prev" type="button" aria-label="Předchozí fotka">‹</button>'
+      + '<button class="lightbox-nav lightbox-next" type="button" aria-label="Další fotka">›</button>'
+      + '<img alt=""><div class="lightbox-caption"><span class="lightbox-text"></span><span class="lightbox-count"></span></div>';
     document.body.appendChild(dlg);
     var img = dlg.querySelector('img');
-    var cap = dlg.querySelector('.lightbox-caption');
+    var cap = dlg.querySelector('.lightbox-text');
+    var count = dlg.querySelector('.lightbox-count');
+    var prevBtn = dlg.querySelector('.lightbox-prev');
+    var nextBtn = dlg.querySelector('.lightbox-next');
     var list = Array.prototype.slice.call(links);
     var idx = 0;
+    if (list.length < 2) { prevBtn.hidden = true; nextBtn.hidden = true; }
+    function preload(i) {
+      var a = list[(i + list.length) % list.length];
+      if (a) { var p = new Image(); p.src = a.getAttribute('href'); }
+    }
     function show(i) {
       idx = (i + list.length) % list.length;
       img.src = list[idx].getAttribute('href');
       img.alt = list[idx].querySelector('img') ? list[idx].querySelector('img').alt : '';
       cap.textContent = list[idx].getAttribute('data-caption') || '';
+      count.textContent = list.length > 1 ? (idx + 1) + ' / ' + list.length : '';
+      preload(idx + 1); preload(idx - 1);
     }
     list.forEach(function (a, i) {
       a.addEventListener('click', function (e) { e.preventDefault(); show(i); dlg.showModal(); });
     });
     dlg.querySelector('.lightbox-close').addEventListener('click', function () { dlg.close(); });
+    prevBtn.addEventListener('click', function (e) { e.stopPropagation(); show(idx - 1); });
+    nextBtn.addEventListener('click', function (e) { e.stopPropagation(); show(idx + 1); });
+    // Klik na samotnou fotku = další fotka; klik mimo (na pozadí) = zavřít
+    img.addEventListener('click', function (e) { e.stopPropagation(); if (list.length > 1) show(idx + 1); });
     dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
     dlg.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight') show(idx + 1);
-      if (e.key === 'ArrowLeft') show(idx - 1);
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(idx + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(idx - 1); }
     });
+    // Posun prstem na mobilu
+    var touchX = null;
+    dlg.addEventListener('touchstart', function (e) { touchX = e.changedTouches[0].clientX; }, { passive: true });
+    dlg.addEventListener('touchend', function (e) {
+      if (touchX === null) return;
+      var dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) > 40) show(dx < 0 ? idx + 1 : idx - 1);
+    }, { passive: true });
   }
 })();

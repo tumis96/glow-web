@@ -208,7 +208,15 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
 .lightbox::backdrop { background: rgba(58, 51, 53, .85); }
 .lightbox img { max-width: min(96vw, 1100px); max-height: 88vh; width: auto; height: auto; border-radius: 12px; margin: auto; }
 .lightbox-close { position: fixed; top: 16px; right: 16px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--white); color: var(--ink); font-size: 22px; cursor: pointer; }
-.lightbox-caption { color: var(--white); text-align: center; font-size: 14px; margin-top: 10px; }
+.lightbox-caption { color: var(--white); text-align: center; font-size: 14px; margin-top: 10px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.lightbox-count { opacity: .7; font-variant-numeric: tabular-nums; }
+.lightbox img { cursor: pointer; }
+.lightbox-nav { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255, 253, 252, .92); color: var(--ink); font-size: 30px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
+.lightbox-nav:hover { background: var(--white); }
+.lightbox-prev { left: 16px; }
+.lightbox-next { right: 16px; }
+.lightbox-nav[hidden] { display: none; }
+@media (max-width: 640px) { .lightbox-nav { top: auto; bottom: 18px; transform: none; width: 44px; height: 44px; } .lightbox-prev { left: 18px; } .lightbox-next { right: 18px; } .lightbox-caption { margin-bottom: 64px; } }
 
 /* ---------- formuláře ---------- */
 .form { display: grid; gap: 16px; }

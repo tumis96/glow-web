@@ -79,6 +79,24 @@ CREATE TABLE IF NOT EXISTS settings (
   PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Recenze klientek z webu. Tabulku si při prvním použití založí includes/reviews.php (reviewsEnsureSchema) včetně
+-- 4 původních recenzí – tady je jen pro úplnost schématu. pending = čeká na schválení, approved = na webu, rejected = nezveřejněná.
+CREATE TABLE IF NOT EXISTS reviews (
+  id              INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+  status          ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  name            VARCHAR(80)   NOT NULL,
+  email           VARCHAR(190)  NULL,                           -- nepovinný, nikdy se nezveřejňuje
+  service         VARCHAR(80)   NULL,                           -- z REVIEW_SERVICES v includes/reviews.php
+  rating          TINYINT UNSIGNED NOT NULL DEFAULT 5,          -- 1–5
+  text            TEXT          NOT NULL,
+  decide_token    CHAR(40)      NOT NULL,                       -- schválení/odmítnutí z e-mailu
+  ip_hash         CHAR(16)      NULL,
+  created_at      DATETIME      NOT NULL,
+  decided_at      DATETIME      NULL,
+  PRIMARY KEY (id),
+  KEY idx_status (status, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Jednoduchý log odeslaných e-mailů a chyb (pro ladění bez přístupu k serveru).
 CREATE TABLE IF NOT EXISTS log (
   id              INT UNSIGNED  NOT NULL AUTO_INCREMENT,

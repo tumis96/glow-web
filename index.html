@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202610192014">
+  <link rel="stylesheet" href="css/style.css?v=202610271100">
 </head>
 <body>
 
@@ -164,14 +164,85 @@
       <div class="section-head section-head--center">
         <p class="eyebrow">Recenze</p>
         <h2>Co říkají klientky</h2>
-        <p>Zprávy, které mi přišly po svatbách. Zkrácené, jinak beze změny.</p>
+        <p>Zprávy od klientek po svatbách a&nbsp;recenze přidané přímo tady na webu.</p>
       </div>
-      <!-- Recenze ze zpráv na Instagramu a Messengeru (říjen 2026). Jména doplnit podle Petry – zatím jen tam, kde je známé. -->
-      <div class="grid grid-2">
+      <!-- Recenze se načítají z api/reviews.php (schválené v administraci). Čtyři níže jsou záloha pro případ, že API neodpoví. -->
+      <div class="grid grid-2" id="recenze-list">
         <blockquote class="quote"><p>„S&nbsp;Petrou jsem byla naprosto spokojená. Na zkoušce líčení jsme se dohodly na stylu a&nbsp;na tom, co mi vyhovuje, a&nbsp;vše splnila na výbornou. Už ze zkoušky jsem odcházela nadšená! Svatební líčení vydrželo opravdu celý den a&nbsp;přežilo i&nbsp;kopu slz a&nbsp;doteků tváří. I&nbsp;díky krásnému líčení jsem se mohla ve svůj den cítit jako princezna.“</p><footer>nevěsta, svatební líčení</footer></blockquote>
         <blockquote class="quote"><p>„Mohu jen a&nbsp;jen doporučit! S&nbsp;Petrou byla skvělá komunikace, má super přístup a&nbsp;vidí potenciál tam, kde bych ho ani netušila. Úplně jsem pod jejíma rukama rozkvetla a&nbsp;všechny jsme zůstaly krásné až do noci. Je to kouzelnice a&nbsp;k&nbsp;tomu ještě nesmírně sympatická. Ještě jednou moc děkuji za sobotní péči i&nbsp;skvělou práci, moc jsme si to užily.“</p><footer>klientka, svatební líčení</footer></blockquote>
-        <blockquote class="quote"><p>„Vše bylo úžasné, vyšlo krásně počasí a&nbsp;bylo to perfektní. Make&#8209;up krásný. Všichni účes i&nbsp;líčení chválili, takže za mě úžasný. Jste moc fajn a&nbsp;bylo nám s&nbsp;mamkou s&nbsp;vámi moc dobře, moc děkujeme.“</p><footer>Barbora, nevěsta</footer></blockquote>
+        <blockquote class="quote"><p>„Vše bylo úžasné, vyšlo krásně počasí a&nbsp;bylo to perfektní. Make&#8209;up krásný. Všichni účes i&nbsp;líčení chválili, takže za mě úžasný. Jste moc fajn a&nbsp;bylo nám s&nbsp;mamkou s&nbsp;vámi moc dobře, moc děkujeme.“</p><footer>Barbora, svatební líčení</footer></blockquote>
         <blockquote class="quote"><p>„Make&#8209;up byl skvělý, bylo to úžasné a&nbsp;moc děkuji za vše. Jste skvělá.“</p><footer>klientka, svatební líčení</footer></blockquote>
+      </div>
+      <div class="hero-actions">
+        <button class="btn btn-outline" type="button" id="recenze-vice" hidden>Zobrazit další recenze</button>
+        <button class="btn btn-primary" type="button" id="recenze-pridat" aria-expanded="false" aria-controls="recenze-form-box">Napsat recenzi</button>
+      </div>
+
+      <div class="review-form-box" id="recenze-form-box" hidden>
+        <div class="notice notice--ok" id="recenze-ok" hidden role="status" tabindex="-1">Děkuju! Recenzi si přečtu a&nbsp;po schválení se objeví tady na webu.</div>
+        <form class="form form--recenze card" id="recenze-form" novalidate>
+          <h3>Vaše recenze</h3>
+          <p>Napište pár vět o&nbsp;tom, jak jste byla spokojená. Před zveřejněním si každou recenzi přečtu.</p>
+          <div class="notice notice--error" id="recenze-chyba" role="alert" tabindex="-1" hidden></div>
+          <!-- Past na roboty: pole je mimo obrazovku, člověk ho nevyplní. -->
+          <div class="hp" aria-hidden="true">
+            <label for="recenze-website">Nevyplňovat</label>
+            <input type="text" id="recenze-website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="recenze-jmeno">Jméno <span aria-hidden="true">*</span></label>
+              <input type="text" id="recenze-jmeno" name="jmeno" autocomplete="given-name" maxlength="80" required>
+              <span class="hint">Stačí křestní, zobrazí se u&nbsp;recenze.</span>
+              <span class="field-error">Napište prosím své jméno.</span>
+            </div>
+            <div class="field">
+              <label for="recenze-sluzba">Služba</label>
+              <select id="recenze-sluzba" name="sluzba">
+                <option value="">– vyberte –</option>
+                <option>Svatební líčení</option>
+                <option>Zkouška svatebního líčení</option>
+                <option>Plesové líčení</option>
+                <option>Denní líčení</option>
+                <option>Líčení na focení</option>
+                <option>Účes</option>
+                <option>Kurz líčení</option>
+                <option>Jiné</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <span class="field-label" id="recenze-hodnoceni-label">Hodnocení <span aria-hidden="true">*</span></span>
+            <div class="stars" role="radiogroup" aria-labelledby="recenze-hodnoceni-label">
+              <input type="radio" id="hv5" name="hodnoceni" value="5"><label for="hv5" title="5 hvězdiček"><span class="sr-only">5 hvězdiček</span>★</label>
+              <input type="radio" id="hv4" name="hodnoceni" value="4"><label for="hv4" title="4 hvězdičky"><span class="sr-only">4 hvězdičky</span>★</label>
+              <input type="radio" id="hv3" name="hodnoceni" value="3"><label for="hv3" title="3 hvězdičky"><span class="sr-only">3 hvězdičky</span>★</label>
+              <input type="radio" id="hv2" name="hodnoceni" value="2"><label for="hv2" title="2 hvězdičky"><span class="sr-only">2 hvězdičky</span>★</label>
+              <input type="radio" id="hv1" name="hodnoceni" value="1"><label for="hv1" title="1 hvězdička"><span class="sr-only">1 hvězdička</span>★</label>
+            </div>
+            <span class="field-error">Vyberte prosím počet hvězdiček.</span>
+          </div>
+          <div class="field">
+            <label for="recenze-text">Recenze <span aria-hidden="true">*</span></label>
+            <textarea id="recenze-text" name="text" maxlength="1200" required placeholder="Jak probíhala příprava, jak líčení vydrželo, co se vám líbilo…"></textarea>
+            <span class="field-error">Napište prosím alespoň pár vět (nejméně 20 znaků).</span>
+          </div>
+          <div class="field">
+            <label for="recenze-email">E‑mail <span class="muted" style="font-weight:400">(nepovinné)</span></label>
+            <input type="email" id="recenze-email" name="email" autocomplete="email" inputmode="email">
+            <span class="hint">Nezveřejňuje se. Jen kdybych se chtěla na něco doptat.</span>
+            <span class="field-error">E‑mail nevypadá správně. Můžete ho nechat prázdný.</span>
+          </div>
+          <div class="field">
+            <label class="check" for="recenze-gdpr">
+              <input type="checkbox" id="recenze-gdpr" name="gdpr" required>
+              <span>Souhlasím se zveřejněním recenze a&nbsp;uvedeného jména na tomto webu. Souhlas můžu kdykoli odvolat na info@glowbypetra.cz. Podrobnosti v&nbsp;<a class="link" href="ochrana-osobnich-udaju.html">ochraně osobních údajů</a>. <span aria-hidden="true">*</span></span>
+            </label>
+            <span class="field-error">Bez souhlasu recenzi nemůžu zveřejnit.</span>
+          </div>
+          <p class="form-note">Položky označené * jsou povinné.</p>
+          <button class="btn btn-primary" type="submit" id="recenze-odeslat">Odeslat recenzi</button>
+        </form>
       </div>
     </div>
   </section>
@@ -225,7 +296,8 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=202610192014"></script>
-<script src="js/upravy.js?v=202610192014"></script>
+<script src="js/main.js?v=202610271100"></script>
+<script src="js/recenze.js?v=202610271100"></script>
+<script src="js/upravy.js?v=202610271100"></script>
 </body>
 </html>

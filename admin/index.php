@@ -196,9 +196,16 @@ function bookingCard(array $b, bool $hl, string $f, string $q): void {
     <?php
 }
 
-adminPage('Rezervace', function () use ($f, $q, $stats, $list, $highlight) {
+require_once __DIR__ . '/../includes/reviews.php';
+reviewsEnsureSchema();
+$pendingReviews = reviewsCount('pending');
+
+adminPage('Rezervace', function () use ($f, $q, $stats, $list, $highlight, $pendingReviews) {
     ?>
-    <p class="eyebrow">Tvoje rezervace</p>
+    <?php if ($pendingReviews): ?>
+      <div class="notice notice--warn" role="status">Na webu <?= $pendingReviews === 1 ? 'čeká 1 nová recenze' : ($pendingReviews < 5 ? "čekají $pendingReviews nové recenze" : "čeká $pendingReviews nových recenzí") ?> na schválení. <a href="reviews.php">Projít recenze</a></div>
+    <?php endif; ?>
+    <p class="eyebrow<?= $pendingReviews ? ' mt-3' : '' ?>">Tvoje rezervace</p>
     <div class="stats mt-2">
       <a class="stat<?= $stats['pending'] ? ' is-hot' : '' ?>" href="index.php?f=cekajici"><b><?= $stats['pending'] ?></b><span>čeká na potvrzení</span></a>
       <a class="stat<?= $stats['deposit'] ? ' is-hot' : '' ?>" href="index.php?f=svatby"><b><?= $stats['deposit'] ?></b><span>čeká na zálohu</span></a>

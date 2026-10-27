@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202610271600">
+  <link rel="stylesheet" href="css/style.css?v=202610271930">
   <style>
     /* jen pro tuto stránku: chyby ve formuláři, shrnutí poptávky, zálohový blok */
     .field.is-invalid input, .field.is-invalid textarea { border-color: #b04a3f; }
@@ -370,7 +370,7 @@
 
           <fieldset class="field" style="border:0;padding:0;margin:0;min-width:0">
             <legend style="font-size:14px;font-weight:600;padding:0">Zájem o&nbsp;zkoušku líčení *</legend>
-            <div class="choice-grid">
+            <div class="choice-grid choice-grid--2">
               <label class="choice"><input type="radio" name="zkouska" value="ano"><b>Ano, chci zkoušku</b><small>1&nbsp;000&nbsp;Kč, zároveň záloha na termín</small></label>
               <label class="choice"><input type="radio" name="zkouska" value="ne"><b>Ne, bez zkoušky</b><small>Záloha 1&nbsp;000&nbsp;Kč se odečte z&nbsp;ceny</small></label>
             </div>
@@ -471,8 +471,8 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=202610271600"></script>
-<script src="js/upravy.js?v=202610271600"></script>
+<script src="js/main.js?v=202610271930"></script>
+<script src="js/upravy.js?v=202610271930"></script>
 <script>
 /* Svatební poptávka – validace a odeslání na POST api/wedding.php (JSON).
    Odpověď: { ok, id, vs, deposit: {amount, account, vs, message, due, qr_url|null}, summary: {date, place, name} }

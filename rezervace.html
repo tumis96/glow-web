@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202610271100">
+  <link rel="stylesheet" href="css/style.css?v=202610271400">
   <style>
     /* Doplňky jen pro stránku rezervace (dvousloupcový layout, kroky, kalendář) */
     [hidden] { display: none !important; }
@@ -24,19 +24,7 @@
     .rez-group { margin-top: 24px; }
     .rez-group h3 { font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
     .rez-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 28px; }
-    .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 24px 0 12px; }
-    .cal-head h3 { font-size: 22px; }
-    .cal-nav { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 18px; cursor: pointer; }
-    .cal-nav:hover { border-color: var(--accent); }
-    .cal-nav[disabled] { opacity: .35; cursor: not-allowed; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
-    .cal-wd { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 0; }
-    .cal-day { aspect-ratio: 1; width: 100%; border-radius: 50%; border: 1px solid transparent; background: transparent; font: inherit; font-size: 15px; color: inherit; cursor: pointer; font-variant-numeric: tabular-nums; }
-    .cal-day:hover { border-color: var(--accent); }
-    .cal-day--volny { background: var(--white); border-color: var(--line); font-weight: 600; }
-    .cal-day[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--white); }
-    .cal-day[disabled] { color: #b9b0b3; cursor: not-allowed; background: transparent; border-color: transparent; font-weight: 400; }
-    .cal-day--obsazeny[disabled] { text-decoration: line-through; }
+    /* styly kalendáře (.cal-*) jsou společné v css/style.css */
     .rez-sloty { grid-template-columns: repeat(3, 1fr); }
     @media (min-width: 640px) { .rez-sloty { grid-template-columns: repeat(4, 1fr); } }
     .rez-summary dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; margin: 16px 0 0; font-size: 15px; }
@@ -273,8 +261,8 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=202610271100"></script>
-<script src="js/upravy.js?v=202610271100"></script>
-<script src="js/rezervace.js?v=202610271100"></script>
+<script src="js/main.js?v=202610271400"></script>
+<script src="js/upravy.js?v=202610271400"></script>
+<script src="js/rezervace.js?v=202610271400"></script>
 </body>
 </html>

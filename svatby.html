@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Hind:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202610271100">
+  <link rel="stylesheet" href="css/style.css?v=202610271400">
   <style>
     /* jen pro tuto stránku: chyby ve formuláři, shrnutí poptávky, zálohový blok */
     .field.is-invalid input, .field.is-invalid textarea { border-color: #b04a3f; }
@@ -317,8 +317,25 @@
             <div class="field">
               <label for="datum">Datum svatby *</label>
               <input type="date" id="datum" name="datum" required>
+              <span class="hint">Vyber den v&nbsp;kalendáři níže, nebo ho napiš.</span>
               <span class="error">Vyber prosím datum svatby.</span>
             </div>
+          </div>
+
+          <!-- Kalendář volných svatebních termínů: data z api/wedding-availability.php, výběr dne vyplní pole Datum svatby. -->
+          <div class="field cal-box" id="svatba-kalendar">
+            <div class="cal-head">
+              <button class="cal-nav" type="button" id="sv-cal-prev" aria-label="Předchozí měsíc">‹</button>
+              <h3 id="sv-cal-nadpis">Kalendář</h3>
+              <button class="cal-nav" type="button" id="sv-cal-next" aria-label="Další měsíc">›</button>
+            </div>
+            <div class="cal-grid" id="sv-cal" role="group" aria-labelledby="sv-cal-nadpis"><!-- doplní skript níže --></div>
+            <div class="cal-legend">
+              <span><i class="cal-dot"></i>volný den</span>
+              <span><i class="cal-dot cal-dot--obsazeny"></i>obsazeno</span>
+              <span><i class="cal-dot cal-dot--vybrano"></i>tvůj výběr</span>
+            </div>
+            <span class="hint" id="sv-cal-notice">Načítám volné dny…</span>
           </div>
 
           <div class="field">
@@ -454,8 +471,8 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=202610271100"></script>
-<script src="js/upravy.js?v=202610271100"></script>
+<script src="js/main.js?v=202610271400"></script>
+<script src="js/upravy.js?v=202610271400"></script>
 <script>
 /* Svatební poptávka – validace a odeslání na POST api/wedding.php (JSON).
    Odpověď: { ok, id, vs, deposit: {amount, account, vs, message, due, qr_url|null}, summary: {date, place, name} }
@@ -500,6 +517,99 @@
     form.setAttribute('aria-busy', busy ? 'true' : 'false');
     odeslat.disabled = busy;
     odeslat.textContent = busy ? 'Odesílám…' : 'Odeslat poptávku';
+  }
+
+  // ---------- kalendář volných svatebních termínů (GET api/wedding-availability.php?month=YYYY-MM) ----------
+  var cal = document.getElementById('sv-cal');
+  if (cal) {
+    var calNadpis = document.getElementById('sv-cal-nadpis');
+    var calPrev = document.getElementById('sv-cal-prev');
+    var calNext = document.getElementById('sv-cal-next');
+    var calNotice = document.getElementById('sv-cal-notice');
+    var MESICE = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec'];
+    var DNY = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+    var minM = new Date(today.getFullYear(), today.getMonth(), 1);
+    var maxM = new Date(today.getFullYear(), today.getMonth() + 24, 1);
+    var mesic = new Date(minM);
+    var cache = {};
+    var pozadavek = 0;
+
+    function klicM(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+
+    function vykresli(days) {
+      cal.innerHTML = '';
+      DNY.forEach(function (n) { var w = document.createElement('div'); w.className = 'cal-wd'; w.textContent = n; cal.appendChild(w); });
+      var odsazeni = (mesic.getDay() + 6) % 7;   // kalendář začíná pondělím
+      for (var i = 0; i < odsazeni; i++) cal.appendChild(document.createElement('div'));
+      var pocet = new Date(mesic.getFullYear(), mesic.getMonth() + 1, 0).getDate();
+      var vybrano = form.datum.value;
+      for (var d = 1; d <= pocet; d++) {
+        var iso = klicM(mesic) + '-' + pad(d);
+        var stav = days ? days[iso] : null;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cal-day';
+        b.textContent = d;
+        b.setAttribute('data-date', iso);
+        if (stav === 'free') {
+          b.classList.add('cal-day--volny');
+          b.setAttribute('aria-label', csDate(iso) + ' – volný den');
+        } else {
+          b.disabled = true;
+          if (stav === 'taken') { b.classList.add('cal-day--obsazeny'); b.setAttribute('aria-label', csDate(iso) + ' – obsazeno'); }
+        }
+        if (iso === vybrano) b.setAttribute('aria-pressed', 'true');
+        cal.appendChild(b);
+      }
+    }
+
+    function nacti() {
+      var k = klicM(mesic);
+      var id = ++pozadavek;
+      calNadpis.textContent = MESICE[mesic.getMonth()] + ' ' + mesic.getFullYear();
+      calPrev.disabled = mesic <= minM;
+      calNext.disabled = mesic >= maxM;
+      if (cache[k]) { vykresli(cache[k]); calNotice.textContent = 'Klikni na den, který tě zajímá. Přeškrtnuté dny už mám obsazené.'; return; }
+      vykresli(null);
+      cal.setAttribute('aria-busy', 'true');
+      calNotice.textContent = 'Načítám volné dny…';
+      fetch('api/wedding-availability.php?month=' + k, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (id !== pozadavek) return;
+          cal.removeAttribute('aria-busy');
+          if (!data || !data.ok || !data.days) { calNotice.textContent = 'Volné dny se nepodařilo načíst. Datum můžeš napsat ručně do pole výše.'; return; }
+          cache[k] = data.days;
+          vykresli(data.days);
+          var volnych = Object.keys(data.days).filter(function (x) { return data.days[x] === 'free'; }).length;
+          calNotice.textContent = volnych ? 'Klikni na den, který tě zajímá. Přeškrtnuté dny už mám obsazené.' : 'Tento měsíc už nemám volno, zkus další.';
+        })
+        .catch(function () {
+          if (id !== pozadavek) return;
+          cal.removeAttribute('aria-busy');
+          calNotice.textContent = 'Volné dny se nepodařilo načíst. Datum můžeš napsat ručně do pole výše.';
+        });
+    }
+
+    cal.addEventListener('click', function (e) {
+      var b = e.target.closest('.cal-day');
+      if (!b || b.disabled) return;
+      form.datum.value = b.getAttribute('data-date');
+      cal.querySelectorAll('.cal-day[aria-pressed]').forEach(function (x) { x.removeAttribute('aria-pressed'); });
+      b.setAttribute('aria-pressed', 'true');
+      var wrap = fieldOf(form.datum);
+      if (wrap) wrap.classList.remove('is-invalid');
+    });
+    calPrev.addEventListener('click', function () { mesic = new Date(mesic.getFullYear(), mesic.getMonth() - 1, 1); nacti(); });
+    calNext.addEventListener('click', function () { mesic = new Date(mesic.getFullYear(), mesic.getMonth() + 1, 1); nacti(); });
+    // Datum napsané ručně → kalendář přeskočí na ten měsíc a den zvýrazní
+    form.datum.addEventListener('change', function () {
+      var v = form.datum.value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+      var m = new Date(parseInt(v.slice(0, 4), 10), parseInt(v.slice(5, 7), 10) - 1, 1);
+      if (m >= minM && m <= maxM) { mesic = m; nacti(); }
+    });
+    nacti();
   }
 
   form.addEventListener('submit', function (e) {

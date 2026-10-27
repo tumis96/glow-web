@@ -16,6 +16,8 @@ $limits = bookingLimits();
 $old   = ['services' => [], 'persons' => 1, 'date' => '', 'time' => '', 'name' => '', 'phone' => '', 'email' => '', 'note' => '', 'notify' => true];
 $error = '';
 $conflict = false;
+// Odkaz „+ přidat“ z kalendáře: new.php?date=YYYY-MM-DD
+if (!isPost() && validDate((string)($_GET['date'] ?? ''))) $old['date'] = (string)$_GET['date'];
 
 if (isPost()) {
     csrfCheck();

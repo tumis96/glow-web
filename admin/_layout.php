@@ -2,7 +2,7 @@
 /**
  * Společná kostra stránek administrace: hlavička s logem a menu, zprávy po přesměrování, patička.
  * Použití: adminPage('Rezervace', function () { ...echo HTML... }, ['active' => 'index']);
- * $opts: 'nav' => bool (menu; na loginu false), 'active' => 'index'|'new'|'blocks'|'reviews'
+ * $opts: 'nav' => bool (menu; na loginu false), 'active' => 'index'|'calendar'|'new'|'blocks'|'reviews'
  */
 declare(strict_types=1);
 
@@ -13,6 +13,7 @@ function adminPage(string $title, callable $body, array $opts = []): void {
     $active = (string)($opts['active'] ?? '');
     $menu   = [
         'index'  => ['index.php',  'Rezervace'],
+        'calendar' => ['calendar.php', 'Kalendář'],
         'new'    => ['new.php',    'Nová rezervace'],
         'blocks' => ['blocks.php', 'Blokace'],
         'reviews' => ['reviews.php', 'Recenze'],

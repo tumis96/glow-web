@@ -96,6 +96,32 @@ function availableDaysInMonth(int $year, int $month, array $serviceIds, int $per
     return $out;
 }
 
+/**
+ * Svatební kalendář: stav každého dne v měsíci – 'free' | 'taken' (svatba držící termín nebo blokace) | 'past' (dřív než zítra).
+ * Stejná pravidla jako createWedding(): jedna svatba za den, blokace celý den vylučuje.
+ */
+function weddingDaysInMonth(int $year, int $month): array {
+    $days  = (int)date('t', mktime(0, 0, 0, $month, 1, $year));
+    $first = sprintf('%04d-%02d-01', $year, $month);
+    $last  = sprintf('%04d-%02d-%02d', $year, $month, $days);
+    $taken = [];
+    $st = db()->prepare("SELECT DATE(start_at) AS d FROM bookings WHERE kind = 'wedding' AND status IN ('awaiting_deposit','confirmed') AND start_at >= ? AND start_at <= ?");
+    $st->execute(["$first 00:00:00", "$last 23:59:59"]);
+    foreach ($st as $r) $taken[$r['d']] = true;
+    $st = db()->prepare('SELECT start_at, end_at FROM blocked_slots WHERE start_at <= ? AND end_at >= ?');
+    $st->execute(["$last 23:59:59", "$first 00:00:00"]);
+    foreach ($st as $r) {
+        for ($t = strtotime(substr($r['start_at'], 0, 10)); $t < strtotime($r['end_at']); $t += 86400) $taken[date('Y-m-d', $t)] = true;
+    }
+    $tomorrow = date('Y-m-d', strtotime('tomorrow'));
+    $out = [];
+    for ($d = 1; $d <= $days; $d++) {
+        $date = sprintf('%04d-%02d-%02d', $year, $month, $d);
+        $out[$date] = $date < $tomorrow ? 'past' : (isset($taken[$date]) ? 'taken' : 'free');
+    }
+    return $out;
+}
+
 /** Je konkrétní slot stále volný? (kontrola před uložením rezervace) */
 function slotIsFree(string $date, string $time, array $serviceIds, int $persons): bool {
     return in_array($time, availableSlots($date, $serviceIds, $persons)['slots'], true);

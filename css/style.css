@@ -290,6 +290,27 @@ dl dd { min-width: 0; overflow-wrap: anywhere; }
 .stars:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
 .field.is-invalid .stars label { color: #e3b3ad; }
 
+/* ---------- kalendář (rezervace, svatby) ---------- */
+.cal-box { max-width: 480px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 24px 0 12px; }
+.cal-head h3 { font-size: 22px; }
+.cal-nav { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 18px; cursor: pointer; }
+.cal-nav:hover { border-color: var(--accent); }
+.cal-nav[disabled] { opacity: .35; cursor: not-allowed; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.cal-wd { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 0; }
+.cal-day { aspect-ratio: 1; width: 100%; border-radius: 50%; border: 1px solid transparent; background: transparent; font: inherit; font-size: 15px; color: inherit; cursor: pointer; font-variant-numeric: tabular-nums; }
+.cal-day:hover { border-color: var(--accent); }
+.cal-day--volny { background: var(--white); border-color: var(--line); font-weight: 600; }
+.cal-day[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.cal-day[disabled] { color: #b9b0b3; cursor: not-allowed; background: transparent; border-color: transparent; font-weight: 400; }
+.cal-day--obsazeny[disabled] { text-decoration: line-through; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.cal-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; margin-right: 6px; border: 1px solid var(--line); background: var(--white); }
+.cal-dot--obsazeny { background: transparent; border-color: transparent; position: relative; }
+.cal-dot--obsazeny::after { content: ""; position: absolute; left: 1px; right: 1px; top: 50%; border-top: 1.5px solid #b9b0b3; }
+.cal-dot--vybrano { background: var(--ink); border-color: var(--ink); }
+
 /* ---------- CTA pruh ---------- */
 .cta-band { background: var(--surface); text-align: center; padding-block: 56px; }
 .cta-band h2 { max-width: 20ch; margin-inline: auto; }

@@ -76,7 +76,8 @@ function gcalDeleteBooking(array $b): void {
 
 /**
  * Obousměrná synchronizace: cizí události z kalendáře (ruční zápisy Petry) → blocked_slots (source='gcal').
- * Okno: dnes až +3 měsíce. Vlastní události (extendedProperties.private.glowBookingId) se přeskakují.
+ * Okno: dnes až +7 měsíců (o měsíc víc než maxMonthsAhead, aby blokace z kalendáře pokryly celé rezervační okno).
+ * Vlastní události (extendedProperties.private.glowBookingId) se přeskakují.
  * Blokace source='gcal', jejichž událost už v kalendáři není, se smažou. Vrátí počet synchronizovaných událostí.
  */
 function gcalPullBlocks(): int {
@@ -84,7 +85,7 @@ function gcalPullBlocks(): int {
     try {
         $tz   = gcalTz();
         $from = new DateTime('today', $tz);
-        $to   = (clone $from)->modify('+3 months');
+        $to   = (clone $from)->modify('+7 months');
         $params = [
             'singleEvents' => 'true',
             'orderBy'      => 'startTime',

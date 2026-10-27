@@ -444,7 +444,7 @@
     } else if (!el.calNext.disabled) {
       text += ' V' + NBSP + 'tomto měsíci volný termín nemám, zkus prosím další měsíc.';
     } else {
-      text += ' V' + NBSP + 'nejbližších dvou měsících bohužel volný termín nemám. Napiš mi nebo zavolej a' + NBSP + 'domluvíme se.';
+      text += ' V' + NBSP + 'nejbližších měsících bohužel volný termín nemám. Napiš mi nebo zavolej a' + NBSP + 'domluvíme se.';
     }
     el.calNotice.textContent = text;
   }

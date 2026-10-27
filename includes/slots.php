@@ -3,7 +3,7 @@
  * Výpočet volných termínů.
  * Slot je volný, když: den+měsíc odpovídá pravidlu, které povoluje VŠECHNY vybrané služby,
  * celá délka (× osoby) se vejde do okna pravidla, nepřekrývá se s držící rezervací
- * (pending / confirmed / awaiting_deposit) ani s blokací, a je v limitech „2 dny až 2 měsíce dopředu“.
+ * (pending / confirmed / awaiting_deposit) ani s blokací, a je v limitech bookingLimits() (min. dny předem, max. měsíce dopředu).
  */
 declare(strict_types=1);
 
@@ -69,7 +69,7 @@ function availableSlots(string $date, array $serviceIds, int $persons): array {
     $res = resolveServices($serviceIds, $persons);
     if (!$res['ok']) return ['date' => $date, 'slots' => [], 'reason' => $res['error']];
     [$minDate, $maxDate] = bookingWindow();
-    if ($date < $minDate || $date > $maxDate) return ['date' => $date, 'slots' => [], 'reason' => 'Termín musí být nejpozději 2 dny předem a nejdéle 2 měsíce dopředu.'];
+    if ($date < $minDate || $date > $maxDate) return ['date' => $date, 'slots' => [], 'reason' => 'Termín musí být nejpozději ' . bookingLimits()['minDaysAhead'] . ' dny předem a nejdéle ' . bookingLimits()['maxMonthsAhead'] . ' měsíců dopředu.'];
     $rule = ruleForDay($date, $res['ids']);
     if (!$rule) return ['date' => $date, 'slots' => [], 'reason' => availabilityText($res['ids'])];
 

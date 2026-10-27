@@ -53,7 +53,7 @@ function availabilityRules(): array {
 function bookingLimits(): array {
     return [
         'minDaysAhead'   => 2,    // nejpozději 2 dny předem
-        'maxMonthsAhead' => 2,    // nejdéle 2 měsíce dopředu
+        'maxMonthsAhead' => 6,    // nejdéle 6 měsíců dopředu (Petra chtěla víc než 2; při změně upravit texty v rezervace.html, sluzby.html a obchodních podmínkách)
         'slotStepMin'    => 30,   // časy po 30 minutách
         'maxPersons'     => 4,
         'cancelFreeUntilDayBefore' => true,   // storno zdarma do dne předem

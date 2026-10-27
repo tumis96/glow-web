@@ -36,8 +36,19 @@ function fmtPhoneCal(string $p): string {
 }
 $statusLabel = ['pending' => 'Čeká na potvrzení', 'awaiting_deposit' => 'Čeká na zálohu', 'confirmed' => 'Potvrzeno'];
 
+/** Barva v kalendáři: wed = svatba, ples = plesové/festivalové líčení a plesový balíček, lic = ostatní líčení, účesy, focení, zkoušky, kurz. */
+const PLES_SERVICES = ['plesove', 'festivalove', 'balicek-ples'];
+function bookingCategory(array $b): string {
+    if ($b['kind'] === 'wedding') return 'wed';
+    $ids = json_decode((string)($b['services_json'] ?? '[]'), true);
+    if (is_array($ids) && array_intersect($ids, PLES_SERVICES)) return 'ples';
+    return 'lic';
+}
+$catLabel = ['wed' => 'Svatba', 'ples' => 'Ples', 'lic' => 'Líčení / účes'];
+
 foreach ($bookings as $b) {
     $isWedding = $b['kind'] === 'wedding';
+    $cat = bookingCategory($b);
     $hasEmail  = $b['customer_email'] !== ADMIN_NO_EMAIL;
     $rows = [];
     if ($isWedding) {
@@ -64,12 +75,12 @@ foreach ($bookings as $b) {
     $rows[] = ['Stav', ($statusLabel[$b['status']] ?? $b['status']) . ' · ' . ($b['source'] === 'admin' ? 'zapsáno ručně' : 'z webu')];
 
     $detail = [
-        'title' => ($isWedding ? 'Svatba · ' : '') . $b['customer_name'],
+        'title' => ($isWedding ? 'Svatba · ' : ($cat === 'ples' ? 'Ples · ' : '')) . $b['customer_name'],
         'rows'  => $rows,
         'link'  => 'index.php?f=vse&id=' . $b['id'],
         'tel'   => $b['customer_phone'],
     ];
-    $cls = 'ci--' . ($isWedding ? 'wed' : 'std') . ($b['status'] === 'confirmed' ? '' : ' ci--wait');
+    $cls = 'ci--' . $cat . ($b['status'] === 'confirmed' ? '' : ' ci--wait');
     if ($isWedding) {
         addItem($byDay, substr($b['start_at'], 0, 10), 0, ['label' => 'Svatba · ' . $b['customer_name'], 'cls' => $cls, 'detail' => $detail]);
     } else {
@@ -98,8 +109,8 @@ unset($items);
 $monthNames = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
 $title = mb_convert_case($monthNames[$month - 1], MB_CASE_TITLE, 'UTF-8') . ' ' . $year;
 $offset = ((int)date('N', strtotime($first))) - 1;   // Po = 0
-$counts = ['std' => 0, 'wed' => 0, 'block' => count($blocks)];
-foreach ($bookings as $b) $counts[$b['kind'] === 'wedding' ? 'wed' : 'std']++;
+$counts = ['lic' => 0, 'ples' => 0, 'wed' => 0, 'wait' => 0, 'block' => count($blocks)];
+foreach ($bookings as $b) { $counts[bookingCategory($b)]++; if ($b['status'] !== 'confirmed') $counts['wait']++; }
 
 adminPage('Kalendář', function () use ($m, $prev, $next, $title, $year, $month, $daysInMonth, $offset, $byDay, $today, $counts) {
     ?>
@@ -123,10 +134,13 @@ adminPage('Kalendář', function () use ($m, $prev, $next, $title, $year, $month
       .ci { display: block; width: 100%; text-align: left; font: inherit; font-size: 12px; line-height: 1.25; padding: 4px 6px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; color: var(--ink); overflow: hidden; }
       .ci b { font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .ci small { display: block; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .ci--std { background: #e9f3ea; border-color: #cfe3d2; }
-      .ci--wed { background: #f3e9f1; border-color: #e3cfe0; }
-      .ci--wait { background: #fff3df; border-color: #f1dcb3; }
+      .ci--lic { background: #e6f2e7; border-color: #9fc8a6; }
+      .ci--ples { background: #e4ecf8; border-color: #9db5dd; }
+      .ci--wed { background: #f4e4f0; border-color: #d39cc4; }
+      .ci--wait { border-style: dashed; border-width: 1.5px; }
+      .ci--wait b::before { content: "? "; color: #8a5a12; }
       .ci--block { background: #eee9e8; border-color: #ddd5d3; color: var(--muted); }
+      .calx-legend i.is-wait { background: transparent; border: 1.5px dashed var(--muted); }
       .ci:hover { filter: brightness(.96); }
       .calx-dialog { border: 1px solid var(--line); border-radius: 16px; padding: 0; width: min(520px, calc(100vw - 32px)); background: var(--white); color: var(--ink); }
       .calx-dialog::backdrop { background: rgba(58, 51, 53, .45); }
@@ -157,9 +171,10 @@ adminPage('Kalendář', function () use ($m, $prev, $next, $title, $year, $month
       </div>
     </div>
     <div class="calx-legend">
-      <span><i style="background:#e9f3ea;border:1px solid #cfe3d2"></i>Rezervace (<?= $counts['std'] ?> tento měsíc)</span>
-      <span><i style="background:#f3e9f1;border:1px solid #e3cfe0"></i>Svatba (<?= $counts['wed'] ?>)</span>
-      <span><i style="background:#fff3df;border:1px solid #f1dcb3"></i>Čeká na potvrzení / zálohu</span>
+      <span><i style="background:#f4e4f0;border:1px solid #d39cc4"></i>Svatba (<?= $counts['wed'] ?> tento měsíc)</span>
+      <span><i style="background:#e4ecf8;border:1px solid #9db5dd"></i>Ples (<?= $counts['ples'] ?>)</span>
+      <span><i style="background:#e6f2e7;border:1px solid #9fc8a6"></i>Líčení, účes, focení, zkouška, kurz (<?= $counts['lic'] ?>)</span>
+      <span><i class="is-wait"></i>Čárkovaně s otazníkem = čeká na potvrzení / zálohu (<?= $counts['wait'] ?>)</span>
       <span><i style="background:#eee9e8;border:1px solid #ddd5d3"></i>Blokace (<?= $counts['block'] ?>)</span>
     </div>
 
